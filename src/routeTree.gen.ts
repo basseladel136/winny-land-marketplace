@@ -9,38 +9,160 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MarketplaceIndexRouteImport } from './routes/marketplace/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as MarketplaceWishlistRouteImport } from './routes/marketplace/wishlist'
+import { Route as MarketplaceCheckoutRouteImport } from './routes/marketplace/checkout'
+import { Route as MarketplaceCartRouteImport } from './routes/marketplace/cart'
+import { Route as AdminProductsRouteImport } from './routes/admin/products'
+import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
+import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketplaceIndexRoute = MarketplaceIndexRouteImport.update({
+  id: '/marketplace/',
+  path: '/marketplace/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const MarketplaceWishlistRoute = MarketplaceWishlistRouteImport.update({
+  id: '/marketplace/wishlist',
+  path: '/marketplace/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceCheckoutRoute = MarketplaceCheckoutRouteImport.update({
+  id: '/marketplace/checkout',
+  path: '/marketplace/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceCartRoute = MarketplaceCartRouteImport.update({
+  id: '/marketplace/cart',
+  path: '/marketplace/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/marketplace/cart': typeof MarketplaceCartRoute
+  '/marketplace/checkout': typeof MarketplaceCheckoutRoute
+  '/marketplace/wishlist': typeof MarketplaceWishlistRoute
+  '/admin/': typeof AdminIndexRoute
+  '/marketplace/': typeof MarketplaceIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/marketplace/cart': typeof MarketplaceCartRoute
+  '/marketplace/checkout': typeof MarketplaceCheckoutRoute
+  '/marketplace/wishlist': typeof MarketplaceWishlistRoute
+  '/admin': typeof AdminIndexRoute
+  '/marketplace': typeof MarketplaceIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/marketplace/cart': typeof MarketplaceCartRoute
+  '/marketplace/checkout': typeof MarketplaceCheckoutRoute
+  '/marketplace/wishlist': typeof MarketplaceWishlistRoute
+  '/admin/': typeof AdminIndexRoute
+  '/marketplace/': typeof MarketplaceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin/categories'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/marketplace/cart'
+    | '/marketplace/checkout'
+    | '/marketplace/wishlist'
+    | '/admin/'
+    | '/marketplace/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin/categories'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/marketplace/cart'
+    | '/marketplace/checkout'
+    | '/marketplace/wishlist'
+    | '/admin'
+    | '/marketplace'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/admin/categories'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/marketplace/cart'
+    | '/marketplace/checkout'
+    | '/marketplace/wishlist'
+    | '/admin/'
+    | '/marketplace/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  MarketplaceCartRoute: typeof MarketplaceCartRoute
+  MarketplaceCheckoutRoute: typeof MarketplaceCheckoutRoute
+  MarketplaceWishlistRoute: typeof MarketplaceWishlistRoute
+  MarketplaceIndexRoute: typeof MarketplaceIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,21 +170,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace/': {
+      id: '/marketplace/'
+      path: '/marketplace'
+      fullPath: '/marketplace/'
+      preLoaderRoute: typeof MarketplaceIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/marketplace/wishlist': {
+      id: '/marketplace/wishlist'
+      path: '/marketplace/wishlist'
+      fullPath: '/marketplace/wishlist'
+      preLoaderRoute: typeof MarketplaceWishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/checkout': {
+      id: '/marketplace/checkout'
+      path: '/marketplace/checkout'
+      fullPath: '/marketplace/checkout'
+      preLoaderRoute: typeof MarketplaceCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/cart': {
+      id: '/marketplace/cart'
+      path: '/marketplace/cart'
+      fullPath: '/marketplace/cart'
+      preLoaderRoute: typeof MarketplaceCartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/categories': {
+      id: '/admin/categories'
+      path: '/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
+interface AdminRouteRouteChildren {
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminProductsRoute: AdminProductsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
+  MarketplaceCartRoute: MarketplaceCartRoute,
+  MarketplaceCheckoutRoute: MarketplaceCheckoutRoute,
+  MarketplaceWishlistRoute: MarketplaceWishlistRoute,
+  MarketplaceIndexRoute: MarketplaceIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

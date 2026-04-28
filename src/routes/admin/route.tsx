@@ -6,12 +6,12 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
-const links = [
+const links: { to: "/admin" | "/admin/products" | "/admin/categories" | "/admin/orders"; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/categories", label: "Categories", icon: Tags },
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart },
-] as const;
+];
 
 function AdminLayout() {
   return (
