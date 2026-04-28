@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/admin/categories")({
-  component: AdminCategories;
+  component: AdminCategories,
 });
 
 function AdminCategories() {
