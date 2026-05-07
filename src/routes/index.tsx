@@ -110,15 +110,16 @@ function Landing() {
                 dominantBaseline="middle"
                 fontFamily='"Abril Fatface", serif'
                 fontSize="170"
-                fill="transparent"
-                stroke="url(#winnyStroke)"
-                strokeWidth={1.2}
-                style={{ filter: "drop-shadow(0 0 12px color-mix(in oklab, var(--glow) 40%, transparent))" }}
-                initial={{ pathLength: 0, fillOpacity: 0 }}
-                animate={{ pathLength: 1, fillOpacity: 1 }}
+                fill="var(--foreground)"
+                stroke="var(--foreground)"
+                strokeWidth={1}
+                strokeDasharray="1200"
+                style={{ filter: "drop-shadow(0 0 14px color-mix(in oklab, var(--glow) 45%, transparent))" }}
+                initial={{ strokeDashoffset: 1200, fillOpacity: 0 }}
+                animate={{ strokeDashoffset: 0, fillOpacity: 1 }}
                 transition={{
-                  pathLength: { duration: 2.4, ease: [0.16, 1, 0.3, 1] },
-                  fillOpacity: { delay: 1.8, duration: 1.2 },
+                  strokeDashoffset: { duration: 2.4, ease: [0.16, 1, 0.3, 1] },
+                  fillOpacity: { delay: 1.6, duration: 1.2 },
                 }}
               >
                 Winny.Land
