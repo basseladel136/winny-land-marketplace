@@ -1,7 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Cabin:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Cabin:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -86,6 +86,8 @@
 
   --particle: oklch(0.75 0.12 15);
   --glow: oklch(0.85 0.12 15);
+  --gold: oklch(0.85 0.12 80);
+  --gold-soft: oklch(0.92 0.07 80);
 }
 
 .dark {
@@ -121,6 +123,11 @@
   --sidebar-ring: oklch(0.75 0.12 15);
   --particle: oklch(0.85 0.16 15);
   --glow: oklch(0.78 0.18 15);
+  --gold: oklch(0.78 0.16 320);
+  --gold-soft: oklch(0.5 0.18 320);
+  --background: oklch(0.13 0.02 270);
+  --card: oklch(0.16 0.02 270);
+  --popover: oklch(0.16 0.02 270);
 }
 
 @layer base {
