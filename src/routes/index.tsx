@@ -100,40 +100,62 @@ function Landing() {
             A little corner of softness
           </motion.div>
 
-          {/* Animated SVG drawing of Winny.Land */}
+          {/* Letter-by-letter handwriting draw of Winny Land */}
           <div className="relative w-full max-w-[900px]">
             <svg
-              viewBox="0 0 900 200"
+              viewBox="0 0 900 220"
               className="h-auto w-full"
-              aria-label="Winny.Land"
+              aria-label="Winny Land"
             >
-              <defs>
-                <linearGradient id="winnyStroke" x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0%" stopColor="var(--foreground)" />
-                  <stop offset="100%" stopColor="var(--foreground)" />
-                </linearGradient>
-              </defs>
-              <motion.text
-                x="50%"
-                y="55%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontFamily='"Abril Fatface", serif'
-                fontSize="170"
-                fill="var(--foreground)"
-                stroke="var(--foreground)"
-                strokeWidth={1}
-                strokeDasharray="1200"
-                style={{ filter: "drop-shadow(0 0 14px color-mix(in oklab, var(--glow) 45%, transparent))" }}
-                initial={{ strokeDashoffset: 1200, fillOpacity: 0 }}
-                animate={{ strokeDashoffset: 0, fillOpacity: 1 }}
-                transition={{
-                  strokeDashoffset: { duration: 2.4, ease: [0.16, 1, 0.3, 1] },
-                  fillOpacity: { delay: 1.6, duration: 1.2 },
-                }}
-              >
-                Winny.Land
-              </motion.text>
+              {(() => {
+                const letters = "Winny Land".split("");
+                // Approximate per-letter advance (Abril Fatface @ 150)
+                const widths: Record<string, number> = {
+                  W: 130, i: 38, n: 78, y: 72, " ": 36, L: 78, a: 70, d: 78,
+                };
+                const fontSize = 150;
+                const totalWidth = letters.reduce((s, ch) => s + (widths[ch] ?? 70), 0);
+                let x = (900 - totalWidth) / 2;
+                const letterDelay = 0.18;
+                const drawDuration = 0.55;
+                return letters.map((ch, i) => {
+                  const cx = x;
+                  x += widths[ch] ?? 70;
+                  if (ch === " ") return null;
+                  return (
+                    <motion.text
+                      key={i}
+                      x={cx}
+                      y={140}
+                      fontFamily='"Abril Fatface", serif'
+                      fontSize={fontSize}
+                      fill="var(--foreground)"
+                      stroke="var(--foreground)"
+                      strokeWidth={1.2}
+                      strokeDasharray="400"
+                      style={{
+                        filter:
+                          "drop-shadow(0 0 10px color-mix(in oklab, var(--glow) 35%, transparent))",
+                      }}
+                      initial={{ strokeDashoffset: 400, fillOpacity: 0 }}
+                      animate={{ strokeDashoffset: 0, fillOpacity: 1 }}
+                      transition={{
+                        strokeDashoffset: {
+                          delay: i * letterDelay,
+                          duration: drawDuration,
+                          ease: [0.16, 1, 0.3, 1],
+                        },
+                        fillOpacity: {
+                          delay: i * letterDelay + drawDuration * 0.7,
+                          duration: 0.4,
+                        },
+                      }}
+                    >
+                      {ch}
+                    </motion.text>
+                  );
+                });
+              })()}
             </svg>
           </div>
 
