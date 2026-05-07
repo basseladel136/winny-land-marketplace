@@ -43,42 +43,71 @@ function Landing() {
     <main className="relative min-h-screen overflow-x-hidden bg-background">
       {/* Hero */}
       <section className="relative min-h-screen overflow-hidden">
+        {/* Soft gradient washes */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-32 top-1/4 h-96 w-96 rounded-full bg-pink-soft blur-3xl opacity-70" />
-          <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-beige blur-3xl opacity-80" />
+          <div
+            className="absolute -left-40 top-1/4 h-[28rem] w-[28rem] rounded-full blur-3xl opacity-70"
+            style={{ background: "color-mix(in oklab, var(--pink) 50%, transparent)" }}
+          />
+          <div
+            className="absolute -right-32 bottom-0 h-96 w-96 rounded-full blur-3xl opacity-70"
+            style={{ background: "color-mix(in oklab, var(--gold-soft) 60%, transparent)" }}
+          />
         </div>
 
-        {/* Animated particles background */}
+        {/* Floating particles */}
         <Particles />
 
-        {/* Twinkling stars — focused on the left side, behind the title */}
-        <div className="pointer-events-none absolute inset-0 z-[1]">
+        {/* Big glowing hero star behind the logo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+          aria-hidden
+          className="pointer-events-none absolute left-[8%] top-1/2 z-[1] -translate-y-1/2"
+        >
+          <Star
+            className="twinkle text-pink"
+            style={{
+              width: "clamp(220px, 32vw, 460px)",
+              height: "clamp(220px, 32vw, 460px)",
+              filter:
+                "drop-shadow(0 0 30px color-mix(in oklab, var(--glow) 70%, transparent)) drop-shadow(0 0 80px color-mix(in oklab, var(--gold) 50%, transparent))",
+              opacity: 0.55,
+            }}
+            fill="currentColor"
+            strokeWidth={0}
+          />
+        </motion.div>
+
+        {/* Twinkling stars — focused on the left side */}
+        <div className="pointer-events-none absolute inset-0 z-[2]">
           {[
-            { top: "10%", left: "6%", size: 18, delay: 0 },
-            { top: "18%", left: "22%", size: 12, delay: 0.4 },
-            { top: "26%", left: "10%", size: 22, delay: 0.9 },
-            { top: "34%", left: "30%", size: 14, delay: 0.2 },
-            { top: "42%", left: "16%", size: 26, delay: 1.3 },
-            { top: "48%", left: "4%", size: 16, delay: 0.7 },
-            { top: "55%", left: "26%", size: 20, delay: 1.6 },
-            { top: "62%", left: "12%", size: 14, delay: 0.5 },
-            { top: "70%", left: "22%", size: 18, delay: 1.1 },
-            { top: "78%", left: "8%", size: 22, delay: 0.3 },
-            { top: "86%", left: "30%", size: 12, delay: 1.5 },
-            { top: "20%", left: "44%", size: 10, delay: 1.8 },
-            { top: "60%", left: "42%", size: 11, delay: 0.8 },
-            // a few softer ones on the right for balance
-            { top: "16%", left: "82%", size: 10, delay: 1.2 },
-            { top: "72%", left: "88%", size: 12, delay: 0.6 },
+            { top: "8%", left: "5%", size: 18, delay: 0, color: "pink" },
+            { top: "16%", left: "20%", size: 12, delay: 0.4, color: "gold" },
+            { top: "24%", left: "9%", size: 22, delay: 0.9, color: "pink" },
+            { top: "34%", left: "28%", size: 14, delay: 0.2, color: "gold" },
+            { top: "44%", left: "15%", size: 26, delay: 1.3, color: "pink" },
+            { top: "50%", left: "3%", size: 16, delay: 0.7, color: "gold" },
+            { top: "58%", left: "26%", size: 20, delay: 1.6, color: "pink" },
+            { top: "66%", left: "11%", size: 14, delay: 0.5, color: "gold" },
+            { top: "74%", left: "22%", size: 18, delay: 1.1, color: "pink" },
+            { top: "82%", left: "7%", size: 22, delay: 0.3, color: "gold" },
+            { top: "88%", left: "30%", size: 12, delay: 1.5, color: "pink" },
+            { top: "20%", left: "44%", size: 10, delay: 1.8, color: "gold" },
+            { top: "60%", left: "42%", size: 11, delay: 0.8, color: "pink" },
+            { top: "14%", left: "82%", size: 10, delay: 1.2, color: "gold" },
+            { top: "72%", left: "88%", size: 12, delay: 0.6, color: "pink" },
           ].map((s, i) => (
             <Star
               key={i}
-              className="twinkle absolute text-pink"
+              className="twinkle absolute"
               style={{
                 top: s.top,
                 left: s.left,
                 width: s.size,
                 height: s.size,
+                color: s.color === "gold" ? "var(--gold)" : "var(--pink)",
                 animationDelay: `${s.delay}s`,
                 filter:
                   "drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 16px color-mix(in oklab, var(--glow) 60%, transparent))",
@@ -89,7 +118,7 @@ function Landing() {
           ))}
         </div>
 
-        <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 text-center">
+        <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -100,70 +129,41 @@ function Landing() {
             A little corner of softness
           </motion.div>
 
-          {/* Letter-by-letter handwriting draw of Winny Land */}
-          <div className="relative w-full max-w-[900px]">
-            <svg
-              viewBox="0 0 900 220"
-              className="h-auto w-full"
-              aria-label="Winny Land"
-            >
-              {(() => {
-                const letters = "Winny Land".split("");
-                // Approximate per-letter advance (Abril Fatface @ 150)
-                const widths: Record<string, number> = {
-                  W: 130, i: 38, n: 78, y: 72, " ": 36, L: 78, a: 70, d: 78,
-                };
-                const fontSize = 150;
-                const totalWidth = letters.reduce((s, ch) => s + (widths[ch] ?? 70), 0);
-                let x = (900 - totalWidth) / 2;
-                const letterDelay = 0.18;
-                const drawDuration = 0.55;
-                return letters.map((ch, i) => {
-                  const cx = x;
-                  x += widths[ch] ?? 70;
-                  if (ch === " ") return null;
-                  return (
-                    <motion.text
-                      key={i}
-                      x={cx}
-                      y={140}
-                      fontFamily='"Abril Fatface", serif'
-                      fontSize={fontSize}
-                      fill="var(--foreground)"
-                      stroke="var(--foreground)"
-                      strokeWidth={1.2}
-                      strokeDasharray="400"
-                      style={{
-                        filter:
-                          "drop-shadow(0 0 10px color-mix(in oklab, var(--glow) 35%, transparent))",
-                      }}
-                      initial={{ strokeDashoffset: 400, fillOpacity: 0 }}
-                      animate={{ strokeDashoffset: 0, fillOpacity: 1 }}
-                      transition={{
-                        strokeDashoffset: {
-                          delay: i * letterDelay,
-                          duration: drawDuration,
-                          ease: [0.16, 1, 0.3, 1],
-                        },
-                        fillOpacity: {
-                          delay: i * letterDelay + drawDuration * 0.7,
-                          duration: 0.4,
-                        },
-                      }}
-                    >
-                      {ch}
-                    </motion.text>
-                  );
-                });
-              })()}
-            </svg>
-          </div>
+          {/* Letter-by-letter reveal — luxury serif */}
+          <h1
+            className="select-none text-[clamp(3.5rem,11vw,9rem)] leading-[1.05] tracking-tight text-foreground"
+            style={{
+              fontFamily: '"Playfair Display", serif',
+              fontWeight: 500,
+              textShadow:
+                "0 0 30px color-mix(in oklab, var(--glow) 35%, transparent), 0 0 60px color-mix(in oklab, var(--gold) 25%, transparent)",
+            }}
+            aria-label="Winny Land"
+          >
+            {"Winny Land".split("").map((ch, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{
+                  delay: 0.3 + i * 0.12,
+                  duration: 0.7,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                className="inline-block"
+                style={ch === " " ? { width: "0.4em" } : undefined}
+              >
+                {ch === " " ? "\u00A0" : ch}
+              </motion.span>
+            ))}
+          </h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.6, duration: 0.8 }}
-            className="mt-6 max-w-md text-balance text-lg text-muted-foreground"
+            transition={{ delay: 1.8, duration: 0.8 }}
+            className="mt-6 max-w-md text-balance text-lg italic text-muted-foreground"
+            style={{ fontFamily: '"Playfair Display", serif' }}
           >
             Plushies, accessories & cozy decor — handpicked with love.
           </motion.p>
@@ -171,7 +171,7 @@ function Landing() {
           <motion.button
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2, duration: 0.6 }}
+            transition={{ delay: 2.1, duration: 0.6 }}
             onClick={scrollToShop}
             aria-label="Scroll to shop"
             className="neon-glow group mt-12 inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur hover:bg-pink hover:border-pink"
@@ -182,7 +182,7 @@ function Landing() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2.2 }}
+            transition={{ delay: 2.3 }}
             className="absolute bottom-8 text-xs uppercase tracking-[0.3em] text-muted-foreground"
           >
             Scroll to explore
