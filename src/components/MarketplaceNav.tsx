@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, ShoppingBag, Search } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function MarketplaceNav({
   query,
@@ -32,6 +33,7 @@ export function MarketplaceNav({
         )}
 
         <nav className="ml-auto flex items-center gap-1">
+          <ThemeToggle />
           <Link to="/marketplace/wishlist" className="hover-pink relative rounded-full p-2.5">
             <Heart className="h-5 w-5" />
             {wishCount > 0 && (
