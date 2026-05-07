@@ -51,16 +51,25 @@ function Landing() {
         {/* Animated particles background */}
         <Particles />
 
-        {/* Twinkling stars on the left side */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/2 sm:block">
+        {/* Twinkling stars — focused on the left side, behind the title */}
+        <div className="pointer-events-none absolute inset-0 z-[1]">
           {[
-            { top: "12%", left: "8%", size: 14, delay: 0 },
-            { top: "22%", left: "28%", size: 10, delay: 0.6 },
-            { top: "38%", left: "12%", size: 18, delay: 1.1 },
-            { top: "55%", left: "32%", size: 12, delay: 0.3 },
-            { top: "68%", left: "10%", size: 16, delay: 1.4 },
-            { top: "78%", left: "26%", size: 9, delay: 0.9 },
-            { top: "30%", left: "42%", size: 8, delay: 1.7 },
+            { top: "10%", left: "6%", size: 18, delay: 0 },
+            { top: "18%", left: "22%", size: 12, delay: 0.4 },
+            { top: "26%", left: "10%", size: 22, delay: 0.9 },
+            { top: "34%", left: "30%", size: 14, delay: 0.2 },
+            { top: "42%", left: "16%", size: 26, delay: 1.3 },
+            { top: "48%", left: "4%", size: 16, delay: 0.7 },
+            { top: "55%", left: "26%", size: 20, delay: 1.6 },
+            { top: "62%", left: "12%", size: 14, delay: 0.5 },
+            { top: "70%", left: "22%", size: 18, delay: 1.1 },
+            { top: "78%", left: "8%", size: 22, delay: 0.3 },
+            { top: "86%", left: "30%", size: 12, delay: 1.5 },
+            { top: "20%", left: "44%", size: 10, delay: 1.8 },
+            { top: "60%", left: "42%", size: 11, delay: 0.8 },
+            // a few softer ones on the right for balance
+            { top: "16%", left: "82%", size: 10, delay: 1.2 },
+            { top: "72%", left: "88%", size: 12, delay: 0.6 },
           ].map((s, i) => (
             <Star
               key={i}
@@ -71,7 +80,8 @@ function Landing() {
                 width: s.size,
                 height: s.size,
                 animationDelay: `${s.delay}s`,
-                filter: "drop-shadow(0 0 6px var(--glow))",
+                filter:
+                  "drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 16px color-mix(in oklab, var(--glow) 60%, transparent))",
               }}
               fill="currentColor"
               strokeWidth={0}
