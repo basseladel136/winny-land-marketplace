@@ -51,16 +51,25 @@ function Landing() {
         {/* Animated particles background */}
         <Particles />
 
-        {/* Twinkling stars on the left side */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/2 sm:block">
+        {/* Twinkling stars — focused on the left side, behind the title */}
+        <div className="pointer-events-none absolute inset-0 z-[1]">
           {[
-            { top: "12%", left: "8%", size: 14, delay: 0 },
-            { top: "22%", left: "28%", size: 10, delay: 0.6 },
-            { top: "38%", left: "12%", size: 18, delay: 1.1 },
-            { top: "55%", left: "32%", size: 12, delay: 0.3 },
-            { top: "68%", left: "10%", size: 16, delay: 1.4 },
-            { top: "78%", left: "26%", size: 9, delay: 0.9 },
-            { top: "30%", left: "42%", size: 8, delay: 1.7 },
+            { top: "10%", left: "6%", size: 18, delay: 0 },
+            { top: "18%", left: "22%", size: 12, delay: 0.4 },
+            { top: "26%", left: "10%", size: 22, delay: 0.9 },
+            { top: "34%", left: "30%", size: 14, delay: 0.2 },
+            { top: "42%", left: "16%", size: 26, delay: 1.3 },
+            { top: "48%", left: "4%", size: 16, delay: 0.7 },
+            { top: "55%", left: "26%", size: 20, delay: 1.6 },
+            { top: "62%", left: "12%", size: 14, delay: 0.5 },
+            { top: "70%", left: "22%", size: 18, delay: 1.1 },
+            { top: "78%", left: "8%", size: 22, delay: 0.3 },
+            { top: "86%", left: "30%", size: 12, delay: 1.5 },
+            { top: "20%", left: "44%", size: 10, delay: 1.8 },
+            { top: "60%", left: "42%", size: 11, delay: 0.8 },
+            // a few softer ones on the right for balance
+            { top: "16%", left: "82%", size: 10, delay: 1.2 },
+            { top: "72%", left: "88%", size: 12, delay: 0.6 },
           ].map((s, i) => (
             <Star
               key={i}
@@ -71,7 +80,8 @@ function Landing() {
                 width: s.size,
                 height: s.size,
                 animationDelay: `${s.delay}s`,
-                filter: "drop-shadow(0 0 6px var(--glow))",
+                filter:
+                  "drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 16px color-mix(in oklab, var(--glow) 60%, transparent))",
               }}
               fill="currentColor"
               strokeWidth={0}
@@ -90,40 +100,62 @@ function Landing() {
             A little corner of softness
           </motion.div>
 
-          {/* Animated SVG drawing of Winny.Land */}
+          {/* Letter-by-letter handwriting draw of Winny Land */}
           <div className="relative w-full max-w-[900px]">
             <svg
-              viewBox="0 0 900 200"
+              viewBox="0 0 900 220"
               className="h-auto w-full"
-              aria-label="Winny.Land"
+              aria-label="Winny Land"
             >
-              <defs>
-                <linearGradient id="winnyStroke" x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0%" stopColor="var(--foreground)" />
-                  <stop offset="100%" stopColor="var(--foreground)" />
-                </linearGradient>
-              </defs>
-              <motion.text
-                x="50%"
-                y="55%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontFamily='"Abril Fatface", serif'
-                fontSize="170"
-                fill="var(--foreground)"
-                stroke="var(--foreground)"
-                strokeWidth={1}
-                strokeDasharray="1200"
-                style={{ filter: "drop-shadow(0 0 14px color-mix(in oklab, var(--glow) 45%, transparent))" }}
-                initial={{ strokeDashoffset: 1200, fillOpacity: 0 }}
-                animate={{ strokeDashoffset: 0, fillOpacity: 1 }}
-                transition={{
-                  strokeDashoffset: { duration: 2.4, ease: [0.16, 1, 0.3, 1] },
-                  fillOpacity: { delay: 1.6, duration: 1.2 },
-                }}
-              >
-                Winny.Land
-              </motion.text>
+              {(() => {
+                const letters = "Winny Land".split("");
+                // Approximate per-letter advance (Abril Fatface @ 150)
+                const widths: Record<string, number> = {
+                  W: 130, i: 38, n: 78, y: 72, " ": 36, L: 78, a: 70, d: 78,
+                };
+                const fontSize = 150;
+                const totalWidth = letters.reduce((s, ch) => s + (widths[ch] ?? 70), 0);
+                let x = (900 - totalWidth) / 2;
+                const letterDelay = 0.18;
+                const drawDuration = 0.55;
+                return letters.map((ch, i) => {
+                  const cx = x;
+                  x += widths[ch] ?? 70;
+                  if (ch === " ") return null;
+                  return (
+                    <motion.text
+                      key={i}
+                      x={cx}
+                      y={140}
+                      fontFamily='"Abril Fatface", serif'
+                      fontSize={fontSize}
+                      fill="var(--foreground)"
+                      stroke="var(--foreground)"
+                      strokeWidth={1.2}
+                      strokeDasharray="400"
+                      style={{
+                        filter:
+                          "drop-shadow(0 0 10px color-mix(in oklab, var(--glow) 35%, transparent))",
+                      }}
+                      initial={{ strokeDashoffset: 400, fillOpacity: 0 }}
+                      animate={{ strokeDashoffset: 0, fillOpacity: 1 }}
+                      transition={{
+                        strokeDashoffset: {
+                          delay: i * letterDelay,
+                          duration: drawDuration,
+                          ease: [0.16, 1, 0.3, 1],
+                        },
+                        fillOpacity: {
+                          delay: i * letterDelay + drawDuration * 0.7,
+                          duration: 0.4,
+                        },
+                      }}
+                    >
+                      {ch}
+                    </motion.text>
+                  );
+                });
+              })()}
             </svg>
           </div>
 
