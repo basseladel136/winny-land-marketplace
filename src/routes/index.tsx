@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useMemo, useRef, useState } from "react";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { ChevronDown, Sparkles, Star } from "lucide-react";
 import { MarketplaceNav } from "@/components/MarketplaceNav";
 import { ProductCard } from "@/components/ProductCard";
+import { Particles } from "@/components/Particles";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
@@ -47,6 +48,37 @@ function Landing() {
           <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-beige blur-3xl opacity-80" />
         </div>
 
+        {/* Animated particles background */}
+        <Particles />
+
+        {/* Twinkling stars on the left side */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/2 sm:block">
+          {[
+            { top: "12%", left: "8%", size: 14, delay: 0 },
+            { top: "22%", left: "28%", size: 10, delay: 0.6 },
+            { top: "38%", left: "12%", size: 18, delay: 1.1 },
+            { top: "55%", left: "32%", size: 12, delay: 0.3 },
+            { top: "68%", left: "10%", size: 16, delay: 1.4 },
+            { top: "78%", left: "26%", size: 9, delay: 0.9 },
+            { top: "30%", left: "42%", size: 8, delay: 1.7 },
+          ].map((s, i) => (
+            <Star
+              key={i}
+              className="twinkle absolute text-pink"
+              style={{
+                top: s.top,
+                left: s.left,
+                width: s.size,
+                height: s.size,
+                animationDelay: `${s.delay}s`,
+                filter: "drop-shadow(0 0 6px var(--glow))",
+              }}
+              fill="currentColor"
+              strokeWidth={0}
+            />
+          ))}
+        </div>
+
         <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -58,19 +90,46 @@ function Landing() {
             A little corner of softness
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="font-display text-[clamp(4rem,16vw,12rem)] leading-[0.9] tracking-tight"
-          >
-            Winny<span className="text-pink">.</span>Land
-          </motion.h1>
+          {/* Animated SVG drawing of Winny.Land */}
+          <div className="relative w-full max-w-[900px]">
+            <svg
+              viewBox="0 0 900 200"
+              className="h-auto w-full"
+              aria-label="Winny.Land"
+            >
+              <defs>
+                <linearGradient id="winnyStroke" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="0%" stopColor="var(--foreground)" />
+                  <stop offset="100%" stopColor="var(--foreground)" />
+                </linearGradient>
+              </defs>
+              <motion.text
+                x="50%"
+                y="55%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontFamily='"Abril Fatface", serif'
+                fontSize="170"
+                fill="transparent"
+                stroke="url(#winnyStroke)"
+                strokeWidth={1.2}
+                style={{ filter: "drop-shadow(0 0 12px color-mix(in oklab, var(--glow) 40%, transparent))" }}
+                initial={{ pathLength: 0, fillOpacity: 0 }}
+                animate={{ pathLength: 1, fillOpacity: 1 }}
+                transition={{
+                  pathLength: { duration: 2.4, ease: [0.16, 1, 0.3, 1] },
+                  fillOpacity: { delay: 1.8, duration: 1.2 },
+                }}
+              >
+                Winny.Land
+              </motion.text>
+            </svg>
+          </div>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
+            transition={{ delay: 1.6, duration: 0.8 }}
             className="mt-6 max-w-md text-balance text-lg text-muted-foreground"
           >
             Plushies, accessories & cozy decor — handpicked with love.
@@ -79,10 +138,10 @@ function Landing() {
           <motion.button
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.6 }}
+            transition={{ delay: 2, duration: 0.6 }}
             onClick={scrollToShop}
             aria-label="Scroll to shop"
-            className="group mt-12 inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur transition hover:bg-pink hover:border-pink"
+            className="neon-glow group mt-12 inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur hover:bg-pink hover:border-pink"
           >
             <ChevronDown className="h-6 w-6 animate-bounce group-hover:animate-none" />
           </motion.button>
@@ -90,7 +149,7 @@ function Landing() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.4 }}
+            transition={{ delay: 2.2 }}
             className="absolute bottom-8 text-xs uppercase tracking-[0.3em] text-muted-foreground"
           >
             Scroll to explore
