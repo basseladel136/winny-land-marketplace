@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, ShoppingBag, Search } from "lucide-react";
+import { Heart, ShoppingBag, Search, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 import { useStore } from "@/lib/store";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
