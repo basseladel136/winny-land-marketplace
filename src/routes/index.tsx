@@ -4,7 +4,6 @@ import { useMemo, useRef, useState } from "react";
 import { ChevronDown, Sparkles, Star } from "lucide-react";
 import { MarketplaceNav } from "@/components/MarketplaceNav";
 import { ProductCard } from "@/components/ProductCard";
-import { Particles } from "@/components/Particles";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
