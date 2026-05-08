@@ -17,7 +17,36 @@ export function MarketplaceNav({
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6">
-        <Link to="/marketplace" className="font-display text-2xl tracking-tight">
+        <Link to="/marketplace" className="relative font-display text-2xl tracking-tight">
+          {/* 3 small elegant glowing sparkles behind the logo */}
+          <span aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+            {[
+              { top: "-10px", left: "-14px", size: 12, delay: 0 },
+              { top: "-6px", left: "42%", size: 9, delay: 0.25 },
+              { top: "8px", left: "92%", size: 11, delay: 0.5 },
+            ].map((s, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 0.85, scale: 1 }}
+                transition={{ delay: s.delay, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute"
+                style={{ top: s.top, left: s.left }}
+              >
+                <Sparkles
+                  className="twinkle text-pink"
+                  style={{
+                    width: s.size,
+                    height: s.size,
+                    animationDelay: `${s.delay}s`,
+                    filter:
+                      "drop-shadow(0 0 6px color-mix(in oklab, var(--glow) 80%, transparent))",
+                  }}
+                  strokeWidth={1.25}
+                />
+              </motion.span>
+            ))}
+          </span>
           Winny<span className="text-pink">.</span>Land
         </Link>
 
