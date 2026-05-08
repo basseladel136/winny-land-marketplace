@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useMemo, useRef, useState } from "react";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { MarketplaceNav } from "@/components/MarketplaceNav";
 import { ProductCard } from "@/components/ProductCard";
 import { useStore } from "@/lib/store";
