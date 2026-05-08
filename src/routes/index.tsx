@@ -50,82 +50,78 @@ function Landing() {
           />
         </div>
 
-        {/* Big glowing hero sparkle behind the logo (left) */}
+        {/* Three elegant glowing sparkles around the top-left "Winny Land" text */}
         <div
           aria-hidden
-          className="pointer-events-none absolute left-[12%] top-1/2 z-[1] -translate-y-1/2 animate-fade-in"
+          className="pointer-events-none absolute inset-0 z-[1]"
         >
-          <Sparkles
-            className="twinkle text-pink"
-            style={{
-              width: "clamp(360px, 48vw, 680px)",
-              height: "clamp(360px, 48vw, 680px)",
-              filter:
-                "drop-shadow(0 0 60px color-mix(in oklab, var(--glow) 85%, transparent)) drop-shadow(0 0 120px color-mix(in oklab, var(--pink) 55%, transparent)) drop-shadow(0 0 180px color-mix(in oklab, var(--gold) 30%, transparent))",
-              opacity: 0.55,
-            }}
-            strokeWidth={1}
-          />
+          {[
+            { top: "30%", left: "14%", size: 140, delay: 0.1 },
+            { top: "44%", left: "22%", size: 90, delay: 0.45 },
+            { top: "56%", left: "10%", size: 110, delay: 0.8 },
+          ].map((s, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 0.7, scale: 1 }}
+              transition={{ delay: s.delay, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute"
+              style={{ top: s.top, left: s.left }}
+            >
+              <Sparkles
+                className="twinkle text-pink"
+                style={{
+                  width: s.size,
+                  height: s.size,
+                  animationDelay: `${s.delay}s`,
+                  filter:
+                    "drop-shadow(0 0 30px color-mix(in oklab, var(--glow) 80%, transparent)) drop-shadow(0 0 60px color-mix(in oklab, var(--pink) 50%, transparent))",
+                }}
+                strokeWidth={1}
+              />
+            </motion.div>
+          ))}
         </div>
 
-        {/* Dreamy sparkles + pink particles around the logo */}
+        {/* Soft glowing circle particles (replacing all star shapes) */}
         <div className="pointer-events-none absolute inset-0 z-[2]">
           {[
-            { top: "18%", left: "8%", size: 22, delay: 0, type: "sparkle" },
-            { top: "30%", left: "4%", size: 16, delay: 0.4, type: "sparkle" },
-            { top: "44%", left: "2%", size: 14, delay: 1.0, type: "sparkle" },
-            { top: "58%", left: "10%", size: 20, delay: 1.6, type: "sparkle" },
-            { top: "72%", left: "6%", size: 14, delay: 0.8, type: "sparkle" },
-            { top: "82%", left: "18%", size: 18, delay: 1.4, type: "sparkle" },
-            { top: "26%", left: "20%", size: 12, delay: 1.2, type: "sparkle" },
-            { top: "38%", left: "26%", size: 10, delay: 0.6, type: "sparkle" },
-            { top: "66%", left: "24%", size: 16, delay: 2.0, type: "sparkle" },
-            { top: "14%", left: "28%", size: 9, delay: 1.8, type: "sparkle" },
-            // soft pink dot particles
-            { top: "22%", left: "12%", size: 4, delay: 0.2, type: "dot" },
-            { top: "34%", left: "16%", size: 3, delay: 0.9, type: "dot" },
-            { top: "48%", left: "8%", size: 5, delay: 1.5, type: "dot" },
-            { top: "54%", left: "20%", size: 3, delay: 0.5, type: "dot" },
-            { top: "62%", left: "4%", size: 4, delay: 1.1, type: "dot" },
-            { top: "70%", left: "16%", size: 3, delay: 1.7, type: "dot" },
-            { top: "78%", left: "10%", size: 5, delay: 0.3, type: "dot" },
-            { top: "40%", left: "14%", size: 3, delay: 2.1, type: "dot" },
-          ].map((s, i) =>
-            s.type === "sparkle" ? (
-              <Sparkles
-                key={i}
-                className="twinkle absolute text-pink"
-                style={{
-                  top: s.top,
-                  left: s.left,
-                  width: s.size,
-                  height: s.size,
-                  animationDelay: `${s.delay}s`,
-                  filter:
-                    "drop-shadow(0 0 10px color-mix(in oklab, var(--glow) 80%, transparent))",
-                  opacity: 0.85,
-                }}
-                strokeWidth={1.25}
-              />
-            ) : (
-              <span
-                key={i}
-                className="twinkle absolute rounded-full"
-                style={{
-                  top: s.top,
-                  left: s.left,
-                  width: s.size,
-                  height: s.size,
-                  animationDelay: `${s.delay}s`,
-                  background:
-                    "radial-gradient(circle, color-mix(in oklab, var(--pink) 90%, white) 0%, color-mix(in oklab, var(--pink) 50%, transparent) 60%, transparent 100%)",
-                  filter:
-                    "drop-shadow(0 0 8px color-mix(in oklab, var(--glow) 70%, transparent))",
-                  opacity: 0.8,
-                }}
-              />
-            )
-          )}
+            { top: "18%", left: "8%", size: 6, delay: 0 },
+            { top: "30%", left: "4%", size: 4, delay: 0.4 },
+            { top: "44%", left: "2%", size: 5, delay: 1.0 },
+            { top: "58%", left: "10%", size: 7, delay: 1.6 },
+            { top: "72%", left: "6%", size: 4, delay: 0.8 },
+            { top: "82%", left: "18%", size: 6, delay: 1.4 },
+            { top: "26%", left: "20%", size: 3, delay: 1.2 },
+            { top: "38%", left: "26%", size: 4, delay: 0.6 },
+            { top: "66%", left: "24%", size: 5, delay: 2.0 },
+            { top: "14%", left: "28%", size: 3, delay: 1.8 },
+            { top: "22%", left: "12%", size: 4, delay: 0.2 },
+            { top: "34%", left: "16%", size: 3, delay: 0.9 },
+            { top: "48%", left: "8%", size: 5, delay: 1.5 },
+            { top: "54%", left: "20%", size: 3, delay: 0.5 },
+            { top: "62%", left: "4%", size: 4, delay: 1.1 },
+            { top: "70%", left: "16%", size: 3, delay: 1.7 },
+            { top: "78%", left: "10%", size: 5, delay: 0.3 },
+            { top: "40%", left: "14%", size: 3, delay: 2.1 },
+          ].map((s, i) => (
+            <span
+              key={i}
+              className="twinkle absolute rounded-full"
+              style={{
+                top: s.top,
+                left: s.left,
+                width: s.size,
+                height: s.size,
+                animationDelay: `${s.delay}s`,
+                background:
+                  "radial-gradient(circle, color-mix(in oklab, var(--pink) 90%, white) 0%, color-mix(in oklab, var(--pink) 50%, transparent) 60%, transparent 100%)",
+                filter:
+                  "drop-shadow(0 0 8px color-mix(in oklab, var(--glow) 80%, transparent))",
+                opacity: 0.85,
+              }}
+            />
+          ))}
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 text-center">
