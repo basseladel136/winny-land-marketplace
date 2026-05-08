@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useMemo, useRef, useState } from "react";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { MarketplaceNav } from "@/components/MarketplaceNav";
 import { ProductCard } from "@/components/ProductCard";
 import { useStore } from "@/lib/store";
@@ -48,39 +48,6 @@ function Landing() {
             className="absolute left-1/4 top-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl opacity-60"
             style={{ background: "color-mix(in oklab, var(--pink) 45%, transparent)" }}
           />
-        </div>
-
-        {/* Three elegant glowing sparkles around the top-left "Winny Land" text */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-[1]"
-        >
-          {[
-            { top: "30%", left: "14%", size: 140, delay: 0.1 },
-            { top: "44%", left: "22%", size: 90, delay: 0.45 },
-            { top: "56%", left: "10%", size: 110, delay: 0.8 },
-          ].map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 0.7, scale: 1 }}
-              transition={{ delay: s.delay, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute"
-              style={{ top: s.top, left: s.left }}
-            >
-              <Sparkles
-                className="twinkle text-pink"
-                style={{
-                  width: s.size,
-                  height: s.size,
-                  animationDelay: `${s.delay}s`,
-                  filter:
-                    "drop-shadow(0 0 30px color-mix(in oklab, var(--glow) 80%, transparent)) drop-shadow(0 0 60px color-mix(in oklab, var(--pink) 50%, transparent))",
-                }}
-                strokeWidth={1}
-              />
-            </motion.div>
-          ))}
         </div>
 
         {/* Soft glowing circle particles (replacing all star shapes) */}
