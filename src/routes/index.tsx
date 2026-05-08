@@ -95,14 +95,9 @@ function Landing() {
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-4 py-1.5 text-xs font-medium backdrop-blur animate-fade-in">
-            <Sparkles className="h-3.5 w-3.5 text-pink" />
-            A little corner of softness
-          </div>
-
-          {/* Letter-by-letter reveal — luxury serif, constant color */}
+          {/* Letter-by-letter reveal — "Winny" pink, "Land" foreground */}
           <h1
-            className="select-none text-[clamp(3.5rem,11vw,9rem)] leading-[1.05] tracking-tight text-foreground"
+            className="select-none text-[clamp(3rem,10vw,8rem)] leading-[1.05] tracking-tight"
             style={{
               fontFamily: '"Playfair Display", serif',
               fontWeight: 500,
@@ -111,48 +106,57 @@ function Landing() {
             }}
             aria-label="Winny Land"
           >
-            {"Winny Land".split("").map((ch, i) => (
-              <motion.span
-                key={i}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 0.25 + i * 0.09,
-                  duration: 0.55,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className="inline-block"
-                style={ch === " " ? { width: "0.4em" } : undefined}
-              >
-                {ch === " " ? "\u00A0" : ch}
-              </motion.span>
-            ))}
+            {"Winny Land".split("").map((ch, i) => {
+              const isWinny = i < 5;
+              return (
+                <motion.span
+                  key={i}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: 0.2 + i * 0.08,
+                    duration: 0.5,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  className="inline-block"
+                  style={{
+                    color: isWinny ? "var(--pink)" : "var(--foreground)",
+                    ...(ch === " " ? { width: "0.3em" } : {}),
+                  }}
+                >
+                  {ch === " " ? "\u00A0" : ch}
+                </motion.span>
+              );
+            })}
           </h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.4, duration: 0.6 }}
-            className="mt-6 max-w-md text-balance text-lg italic text-muted-foreground"
-            style={{ fontFamily: '"Playfair Display", serif' }}
+            transition={{ delay: 1.2, duration: 0.6 }}
+            className="mt-6 max-w-md text-base text-muted-foreground"
           >
-            Plushies, accessories & cozy decor — handpicked with love.
+            Where Gifts, Fragrance &amp; Accessories
+            <br />
+            Create Beautiful Moments
           </motion.p>
 
           <motion.button
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.7, duration: 0.5 }}
+            transition={{ delay: 1.5, duration: 0.5 }}
             onClick={scrollToShop}
             aria-label="Scroll to shop"
-            className="neon-glow group mt-12 inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur hover:bg-pink hover:border-pink"
+            className="group mt-16 inline-flex flex-col items-center gap-1 text-pink"
           >
-            <ChevronDown className="h-6 w-6 animate-bounce group-hover:animate-none" />
+            <span className="flex flex-col -space-y-3">
+              <ChevronDown className="h-7 w-7 animate-bounce" strokeWidth={2.5} />
+              <ChevronDown className="h-7 w-7 animate-bounce opacity-60" strokeWidth={2.5} style={{ animationDelay: "0.15s" }} />
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-1">
+              Scroll Down
+            </span>
           </motion.button>
-
-          <div className="absolute bottom-8 text-xs uppercase tracking-[0.3em] text-muted-foreground opacity-70">
-            Scroll to explore
-          </div>
         </div>
       </section>
 
