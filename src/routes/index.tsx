@@ -4,7 +4,6 @@ import { useMemo, useRef, useState } from "react";
 import { ChevronDown, Sparkles, Star } from "lucide-react";
 import { MarketplaceNav } from "@/components/MarketplaceNav";
 import { ProductCard } from "@/components/ProductCard";
-import { Particles } from "@/components/Particles";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
@@ -42,75 +41,52 @@ function Landing() {
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-background">
       {/* Hero */}
-      <section className="relative min-h-screen overflow-hidden">
+      <section className="relative min-h-screen overflow-hidden flex items-center justify-center">
         {/* Soft gradient washes */}
         <div className="pointer-events-none absolute inset-0">
           <div
-            className="absolute -left-40 top-1/4 h-[28rem] w-[28rem] rounded-full blur-3xl opacity-70"
-            style={{ background: "color-mix(in oklab, var(--pink) 50%, transparent)" }}
-          />
-          <div
-            className="absolute -right-32 bottom-0 h-96 w-96 rounded-full blur-3xl opacity-70"
-            style={{ background: "color-mix(in oklab, var(--gold-soft) 60%, transparent)" }}
+            className="absolute left-1/4 top-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl opacity-60"
+            style={{ background: "color-mix(in oklab, var(--pink) 45%, transparent)" }}
           />
         </div>
 
-        {/* Floating particles */}
-        <Particles />
-
-        {/* Big glowing hero star behind the logo */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+        {/* Big glowing hero star behind the logo (left) */}
+        <div
           aria-hidden
-          className="pointer-events-none absolute left-[8%] top-1/2 z-[1] -translate-y-1/2"
+          className="pointer-events-none absolute left-[10%] top-1/2 z-[1] -translate-y-1/2 animate-fade-in"
         >
           <Star
             className="twinkle text-pink"
             style={{
-              width: "clamp(220px, 32vw, 460px)",
-              height: "clamp(220px, 32vw, 460px)",
+              width: "clamp(240px, 34vw, 480px)",
+              height: "clamp(240px, 34vw, 480px)",
               filter:
-                "drop-shadow(0 0 30px color-mix(in oklab, var(--glow) 70%, transparent)) drop-shadow(0 0 80px color-mix(in oklab, var(--gold) 50%, transparent))",
-              opacity: 0.55,
+                "drop-shadow(0 0 40px color-mix(in oklab, var(--glow) 75%, transparent)) drop-shadow(0 0 90px color-mix(in oklab, var(--gold) 40%, transparent))",
+              opacity: 0.5,
             }}
             fill="currentColor"
             strokeWidth={0}
           />
-        </motion.div>
+        </div>
 
-        {/* Twinkling stars — focused on the left side */}
+        {/* Minimal accent stars — only around the logo */}
         <div className="pointer-events-none absolute inset-0 z-[2]">
           {[
-            { top: "8%", left: "5%", size: 18, delay: 0, color: "pink" },
-            { top: "16%", left: "20%", size: 12, delay: 0.4, color: "gold" },
-            { top: "24%", left: "9%", size: 22, delay: 0.9, color: "pink" },
-            { top: "34%", left: "28%", size: 14, delay: 0.2, color: "gold" },
-            { top: "44%", left: "15%", size: 26, delay: 1.3, color: "pink" },
-            { top: "50%", left: "3%", size: 16, delay: 0.7, color: "gold" },
-            { top: "58%", left: "26%", size: 20, delay: 1.6, color: "pink" },
-            { top: "66%", left: "11%", size: 14, delay: 0.5, color: "gold" },
-            { top: "74%", left: "22%", size: 18, delay: 1.1, color: "pink" },
-            { top: "82%", left: "7%", size: 22, delay: 0.3, color: "gold" },
-            { top: "88%", left: "30%", size: 12, delay: 1.5, color: "pink" },
-            { top: "20%", left: "44%", size: 10, delay: 1.8, color: "gold" },
-            { top: "60%", left: "42%", size: 11, delay: 0.8, color: "pink" },
-            { top: "14%", left: "82%", size: 10, delay: 1.2, color: "gold" },
-            { top: "72%", left: "88%", size: 12, delay: 0.6, color: "pink" },
+            { top: "30%", left: "6%", size: 14, delay: 0 },
+            { top: "62%", left: "14%", size: 10, delay: 1.2 },
+            { top: "22%", left: "22%", size: 8, delay: 0.6 },
+            { top: "72%", left: "26%", size: 12, delay: 1.8 },
           ].map((s, i) => (
             <Star
               key={i}
-              className="twinkle absolute"
+              className="twinkle absolute text-pink"
               style={{
                 top: s.top,
                 left: s.left,
                 width: s.size,
                 height: s.size,
-                color: s.color === "gold" ? "var(--gold)" : "var(--pink)",
                 animationDelay: `${s.delay}s`,
-                filter:
-                  "drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 16px color-mix(in oklab, var(--glow) 60%, transparent))",
+                filter: "drop-shadow(0 0 8px var(--glow))",
               }}
               fill="currentColor"
               strokeWidth={0}
@@ -119,35 +95,30 @@ function Landing() {
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-4 py-1.5 text-xs font-medium backdrop-blur"
-          >
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-4 py-1.5 text-xs font-medium backdrop-blur animate-fade-in">
             <Sparkles className="h-3.5 w-3.5 text-pink" />
             A little corner of softness
-          </motion.div>
+          </div>
 
-          {/* Letter-by-letter reveal — luxury serif */}
+          {/* Letter-by-letter reveal — luxury serif, constant color */}
           <h1
             className="select-none text-[clamp(3.5rem,11vw,9rem)] leading-[1.05] tracking-tight text-foreground"
             style={{
               fontFamily: '"Playfair Display", serif',
               fontWeight: 500,
               textShadow:
-                "0 0 30px color-mix(in oklab, var(--glow) 35%, transparent), 0 0 60px color-mix(in oklab, var(--gold) 25%, transparent)",
+                "0 0 30px color-mix(in oklab, var(--glow) 30%, transparent)",
             }}
             aria-label="Winny Land"
           >
             {"Winny Land".split("").map((ch, i) => (
               <motion.span
                 key={i}
-                initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  delay: 0.3 + i * 0.12,
-                  duration: 0.7,
+                  delay: 0.25 + i * 0.09,
+                  duration: 0.55,
                   ease: [0.16, 1, 0.3, 1],
                 }}
                 className="inline-block"
@@ -161,7 +132,7 @@ function Landing() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.8, duration: 0.8 }}
+            transition={{ delay: 1.4, duration: 0.6 }}
             className="mt-6 max-w-md text-balance text-lg italic text-muted-foreground"
             style={{ fontFamily: '"Playfair Display", serif' }}
           >
@@ -169,9 +140,9 @@ function Landing() {
           </motion.p>
 
           <motion.button
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2.1, duration: 0.6 }}
+            transition={{ delay: 1.7, duration: 0.5 }}
             onClick={scrollToShop}
             aria-label="Scroll to shop"
             className="neon-glow group mt-12 inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-background/70 backdrop-blur hover:bg-pink hover:border-pink"
@@ -179,14 +150,9 @@ function Landing() {
             <ChevronDown className="h-6 w-6 animate-bounce group-hover:animate-none" />
           </motion.button>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2.3 }}
-            className="absolute bottom-8 text-xs uppercase tracking-[0.3em] text-muted-foreground"
-          >
+          <div className="absolute bottom-8 text-xs uppercase tracking-[0.3em] text-muted-foreground opacity-70">
             Scroll to explore
-          </motion.div>
+          </div>
         </div>
       </section>
 
