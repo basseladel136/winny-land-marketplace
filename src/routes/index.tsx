@@ -16,6 +16,24 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
+function FilledStar({ size = 12 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-pink"
+      style={{
+        filter:
+          "drop-shadow(0 0 6px color-mix(in oklab, var(--glow) 90%, transparent)) drop-shadow(0 0 14px color-mix(in oklab, var(--glow) 60%, transparent))",
+      }}
+    >
+      <path d="M12 2l2.9 6.9L22 10l-5.5 4.8L18 22l-6-3.6L6 22l1.5-7.2L2 10l7.1-1.1z" />
+    </svg>
+  );
+}
+
 function Landing() {
   const shopRef = useRef<HTMLDivElement>(null);
   const products = useStore((s) => s.products);
