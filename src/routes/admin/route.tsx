@@ -1,64 +1,114 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { LayoutDashboard, Package, Tags, ShoppingCart, ArrowLeft } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  Tags,
+  ShoppingCart,
+  ArrowLeft,
+  Users,
+  Settings,
+  BarChart3,
+} from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Winny Land" }] }),
   component: AdminLayout,
 });
 
-const links: { to: "/admin" | "/admin/products" | "/admin/categories" | "/admin/orders"; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
+const links: {
+  to:
+    | "/admin"
+    | "/admin/products"
+    | "/admin/categories"
+    | "/admin/orders"
+    | "/admin/users"
+    | "/admin/settings"
+    | "/admin/analytics";
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+}[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/categories", label: "Categories", icon: Tags },
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-background">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-sidebar p-6 lg:flex">
-        <Link to="/" className="font-display text-2xl">
-          Winny<span className="text-pink">.</span>Land
+      {/* Desktop sidebar */}
+      <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-7 lg:flex">
+        <Link to="/" className="font-display text-2xl tracking-tight">
+          <span className="text-pink">Winny</span>
+          <span className="opacity-90">Land</span>
         </Link>
-        <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Admin</p>
+        <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.32em] text-muted-foreground">
+          Admin Suite
+        </p>
 
-        <nav className="mt-10 flex flex-col gap-1">
+        <nav className="mt-10 flex flex-col gap-1.5">
           {links.map((l) => (
             <Link
               key={l.to}
               to={l.to}
               activeOptions={{ exact: l.exact ?? false }}
-              activeProps={{ className: "bg-pink text-primary" }}
-              inactiveProps={{ className: "hover:bg-sidebar-accent" }}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
+              activeProps={{
+                className:
+                  "bg-pink text-primary shadow-[0_8px_30px_-12px_color-mix(in_oklab,var(--glow)_60%,transparent)]",
+              }}
+              inactiveProps={{
+                className:
+                  "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              }}
+              className="group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200"
             >
-              <l.icon className="h-4 w-4" /> {l.label}
+              <l.icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+              {l.label}
             </Link>
           ))}
         </nav>
 
-        <Link to="/marketplace" className="mt-auto inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to store
-        </Link>
+        <div className="mt-auto space-y-3">
+          <div className="flex items-center justify-between rounded-2xl border border-sidebar-border bg-card/40 px-4 py-3">
+            <span className="text-xs font-medium text-muted-foreground">Theme</span>
+            <ThemeToggle />
+          </div>
+          <Link
+            to="/marketplace"
+            className="inline-flex items-center gap-2 text-xs text-muted-foreground transition hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to store
+          </Link>
+        </div>
       </aside>
 
       {/* Mobile top bar */}
-      <div className="fixed inset-x-0 top-0 z-30 flex items-center gap-1 overflow-x-auto border-b border-border bg-sidebar px-4 py-3 lg:hidden">
-        <Link to="/" className="font-display text-lg mr-2">Winny.Land</Link>
+      <div className="fixed inset-x-0 top-0 z-30 flex items-center gap-1 overflow-x-auto border-b border-sidebar-border bg-sidebar/95 px-4 py-3 backdrop-blur lg:hidden">
+        <Link to="/" className="mr-2 font-display text-lg">
+          <span className="text-pink">Winny</span>Land
+        </Link>
         {links.map((l) => (
           <Link
             key={l.to}
             to={l.to}
             activeOptions={{ exact: l.exact ?? false }}
             activeProps={{ className: "bg-pink text-primary" }}
-            className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium"
+            className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition hover:bg-sidebar-accent"
           >
             {l.label}
           </Link>
         ))}
+        <div className="ml-1 shrink-0">
+          <ThemeToggle />
+        </div>
       </div>
 
-      <main className="flex-1 px-6 py-8 pt-20 lg:pt-8">
+      <main className="flex-1 px-6 py-8 pt-24 lg:px-10 lg:pt-10">
         <Outlet />
       </main>
     </div>
