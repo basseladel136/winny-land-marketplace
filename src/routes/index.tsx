@@ -50,44 +50,33 @@ function Landing() {
           />
         </div>
 
-        {/* Soft glowing circle particles (replacing all star shapes) */}
+        {/* Filled glowing stars with soft orbit/floating animation */}
         <div className="pointer-events-none absolute inset-0 z-[2]">
           {[
-            { top: "18%", left: "8%", size: 6, delay: 0 },
-            { top: "30%", left: "4%", size: 4, delay: 0.4 },
-            { top: "44%", left: "2%", size: 5, delay: 1.0 },
-            { top: "58%", left: "10%", size: 7, delay: 1.6 },
-            { top: "72%", left: "6%", size: 4, delay: 0.8 },
-            { top: "82%", left: "18%", size: 6, delay: 1.4 },
-            { top: "26%", left: "20%", size: 3, delay: 1.2 },
-            { top: "38%", left: "26%", size: 4, delay: 0.6 },
-            { top: "66%", left: "24%", size: 5, delay: 2.0 },
-            { top: "14%", left: "28%", size: 3, delay: 1.8 },
-            { top: "22%", left: "12%", size: 4, delay: 0.2 },
-            { top: "34%", left: "16%", size: 3, delay: 0.9 },
-            { top: "48%", left: "8%", size: 5, delay: 1.5 },
-            { top: "54%", left: "20%", size: 3, delay: 0.5 },
-            { top: "62%", left: "4%", size: 4, delay: 1.1 },
-            { top: "70%", left: "16%", size: 3, delay: 1.7 },
-            { top: "78%", left: "10%", size: 5, delay: 0.3 },
-            { top: "40%", left: "14%", size: 3, delay: 2.1 },
+            { top: "20%", left: "18%", size: 14, delay: 0, dur: 7 },
+            { top: "30%", left: "10%", size: 10, delay: 0.6, dur: 8 },
+            { top: "44%", left: "22%", size: 16, delay: 1.0, dur: 9 },
+            { top: "58%", left: "14%", size: 12, delay: 1.6, dur: 7.5 },
+            { top: "72%", left: "20%", size: 10, delay: 0.8, dur: 8.5 },
+            { top: "26%", left: "78%", size: 12, delay: 0.4, dur: 9 },
+            { top: "40%", left: "84%", size: 16, delay: 1.2, dur: 7 },
+            { top: "60%", left: "76%", size: 10, delay: 1.8, dur: 8 },
+            { top: "74%", left: "82%", size: 14, delay: 0.2, dur: 9.5 },
+            { top: "16%", left: "50%", size: 9, delay: 1.4, dur: 8 },
+            { top: "84%", left: "48%", size: 11, delay: 0.5, dur: 7.5 },
           ].map((s, i) => (
             <span
               key={i}
-              className="twinkle absolute rounded-full"
+              className="orbit absolute"
               style={{
                 top: s.top,
                 left: s.left,
-                width: s.size,
-                height: s.size,
                 animationDelay: `${s.delay}s`,
-                background:
-                  "radial-gradient(circle, color-mix(in oklab, var(--pink) 90%, white) 0%, color-mix(in oklab, var(--pink) 50%, transparent) 60%, transparent 100%)",
-                filter:
-                  "drop-shadow(0 0 8px color-mix(in oklab, var(--glow) 80%, transparent))",
-                opacity: 0.85,
+                animationDuration: `${s.dur}s`,
               }}
-            />
+            >
+              <FilledStar size={s.size} />
+            </span>
           ))}
         </div>
 
