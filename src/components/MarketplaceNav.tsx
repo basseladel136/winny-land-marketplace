@@ -1,5 +1,23 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, ShoppingBag, Search, Sparkles } from "lucide-react";
+import { Heart, ShoppingBag, Search } from "lucide-react";
+
+function NavStar({ size = 10 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-pink"
+      style={{
+        filter:
+          "drop-shadow(0 0 5px color-mix(in oklab, var(--glow) 90%, transparent))",
+      }}
+    >
+      <path d="M12 2l2.9 6.9L22 10l-5.5 4.8L18 22l-6-3.6L6 22l1.5-7.2L2 10l7.1-1.1z" />
+    </svg>
+  );
+}
 import { motion } from "framer-motion";
 import { useStore } from "@/lib/store";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -33,21 +51,17 @@ export function MarketplaceNav({
                 className="absolute"
                 style={{ top: s.top, left: s.left }}
               >
-                <Sparkles
-                  className="twinkle text-pink"
-                  style={{
-                    width: s.size,
-                    height: s.size,
-                    animationDelay: `${s.delay}s`,
-                    filter:
-                      "drop-shadow(0 0 6px color-mix(in oklab, var(--glow) 80%, transparent))",
-                  }}
-                  strokeWidth={1.25}
-                />
+                <span
+                  className="orbit inline-block"
+                  style={{ animationDelay: `${s.delay}s`, animationDuration: `${7 + i}s` }}
+                >
+                  <NavStar size={s.size} />
+                </span>
               </motion.span>
             ))}
           </span>
-          Winny<span className="text-pink">.</span>Land
+          <span className="text-pink">Winny</span>
+          <span className="text-foreground"> Land</span>
         </Link>
 
         {onQuery && (
