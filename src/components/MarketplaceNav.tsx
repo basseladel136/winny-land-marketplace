@@ -51,21 +51,17 @@ export function MarketplaceNav({
                 className="absolute"
                 style={{ top: s.top, left: s.left }}
               >
-                <Sparkles
-                  className="twinkle text-pink"
-                  style={{
-                    width: s.size,
-                    height: s.size,
-                    animationDelay: `${s.delay}s`,
-                    filter:
-                      "drop-shadow(0 0 6px color-mix(in oklab, var(--glow) 80%, transparent))",
-                  }}
-                  strokeWidth={1.25}
-                />
+                <span
+                  className="orbit inline-block"
+                  style={{ animationDelay: `${s.delay}s`, animationDuration: `${7 + i}s` }}
+                >
+                  <NavStar size={s.size} />
+                </span>
               </motion.span>
             ))}
           </span>
-          Winny<span className="text-pink">.</span>Land
+          <span className="text-pink">Winny</span>
+          <span className="text-foreground"> Land</span>
         </Link>
 
         {onQuery && (
