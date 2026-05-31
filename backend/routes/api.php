@@ -88,7 +88,7 @@ Route::prefix('v1')->middleware(['setLocale', 'throttle:public'])->group(functio
             Route::get('/',                   [CartController::class, 'show']);
             Route::post('items',              [CartController::class, 'addItem']);
             Route::patch('items/{productId}', [CartController::class, 'updateItem']);
-            Route::delete('items/{productId}',[CartController::class, 'removeItem']);
+            Route::delete('items/{productId}', [CartController::class, 'removeItem']);
             Route::delete('/',                [CartController::class, 'clear']);
             Route::post('sync',               [CartController::class, 'sync']);
         });

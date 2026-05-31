@@ -1,0 +1,189 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Winny Land — Local Development Stack
+#
+# Services:    php · nginx · redis · queue · frontend
+# Run with:    docker compose up --build
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ─── PHP-FPM ──────────────────────────────────────────────────────────────
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: winnyland_php
+    restart: unless-stopped
+    working_dir: /var/www/html/backend
+    volumes:
+      - .:/var/www/html
+      - backend_vendor:/var/www/html/backend/vendor
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+    environment:
+      APP_ENV:   ${APP_ENV:-local}
+      APP_KEY:   ${APP_KEY}
+      APP_URL:   ${APP_URL:-http://localhost:8000}
+      # SECURITY: Never hardcode APP_DEBUG=true — use env var, default false
+      APP_DEBUG: ${APP_DEBUG:-false}
+      ADMIN_EMAIL:    ${ADMIN_EMAIL}
+      FRONTEND_URL:   ${FRONTEND_URL:-http://localhost:5173}
+      DB_CONNECTION:  pgsql
+      DB_HOST:        ${DB_HOST}
+      DB_PORT:        ${DB_PORT:-5432}
+      DB_DATABASE:    ${DB_DATABASE:-postgres}
+      DB_USERNAME:    ${DB_USERNAME}
+      DB_PASSWORD:    ${DB_PASSWORD}
+      DB_SSLMODE:     require
+      REDIS_CLIENT:   phpredis
+      REDIS_HOST:     redis
+      REDIS_PORT:     6379
+      CACHE_STORE:        redis
+      QUEUE_CONNECTION:   redis
+      SESSION_DRIVER:     file
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost,localhost:5173,127.0.0.1,127.0.0.1:5173}
+      PAYMOB_API_KEY:        ${PAYMOB_API_KEY:-}
+      PAYMOB_INTEGRATION_ID: ${PAYMOB_INTEGRATION_ID:-}
+      PAYMOB_IFRAME_ID:      ${PAYMOB_IFRAME_ID:-}
+      PAYMOB_HMAC_SECRET:    ${PAYMOB_HMAC_SECRET:-}
+      VAPID_PUBLIC_KEY:  ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT:     ${VAPID_SUBJECT:-mailto:hello@winnyland.shop}
+      MAIL_MAILER:       ${MAIL_MAILER:-log}
+      MAIL_HOST:         ${MAIL_HOST:-mailpit}
+      MAIL_PORT:         ${MAIL_PORT:-1025}
+      MAIL_USERNAME:     ${MAIL_USERNAME:-null}
+      MAIL_PASSWORD:     ${MAIL_PASSWORD:-null}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-hello@winnyland.shop}
+      MAIL_FROM_NAME:    "Winny Land"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - winnyland
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit(@fsockopen('127.0.0.1',9000)?0:1);\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ─── NGINX ────────────────────────────────────────────────────────────────
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: winnyland_nginx
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - winnyland
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost/up || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── REDIS ────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7.4-alpine
+    container_name: winnyland_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - winnyland
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── QUEUE WORKER ─────────────────────────────────────────────────────────
+  queue:
+    build:
+      context: .
+      dockerfile: docker/queue/Dockerfile
+    container_name: winnyland_queue
+    restart: unless-stopped
+    working_dir: /var/www/html/backend
+    volumes:
+      - .:/var/www/html
+      - backend_vendor:/var/www/html/backend/vendor
+    environment:
+      APP_ENV:    ${APP_ENV:-local}
+      APP_KEY:    ${APP_KEY}
+      APP_DEBUG:  ${APP_DEBUG:-false}
+      ADMIN_EMAIL:   ${ADMIN_EMAIL}
+      FRONTEND_URL:  ${FRONTEND_URL:-http://localhost:5173}
+      DB_CONNECTION: pgsql
+      DB_HOST:       ${DB_HOST}
+      DB_PORT:       ${DB_PORT:-5432}
+      DB_DATABASE:   ${DB_DATABASE:-postgres}
+      DB_USERNAME:   ${DB_USERNAME}
+      DB_PASSWORD:   ${DB_PASSWORD}
+      DB_SSLMODE:    require
+      REDIS_CLIENT:  phpredis
+      REDIS_HOST:    redis
+      REDIS_PORT:    6379
+      QUEUE_CONNECTION: redis
+      MAIL_MAILER:       ${MAIL_MAILER:-log}
+      MAIL_HOST:         ${MAIL_HOST:-mailpit}
+      MAIL_PORT:         ${MAIL_PORT:-1025}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-hello@winnyland.shop}
+      VAPID_PUBLIC_KEY:  ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT:     ${VAPID_SUBJECT:-mailto:hello@winnyland.shop}
+    command: ["php", "artisan", "queue:work", "redis", "--sleep=3", "--tries=3", "--timeout=90", "--max-time=3600"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      php:
+        condition: service_healthy
+    networks:
+      - winnyland
+
+  # ─── FRONTEND DEV SERVER ──────────────────────────────────────────────────
+  frontend:
+    image: node:22-alpine
+    container_name: winnyland_frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000/api/v1
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    networks:
+      - winnyland
+
+# ─── VOLUMES ──────────────────────────────────────────────────────────────────
+volumes:
+  redis_data:
+    driver: local
+
+  # Linux-native Composer vendor/ — independent of Windows host backend/vendor
+  backend_vendor:
+    driver: local
+
+  # Linux-native npm node_modules — independent of Windows host frontend/node_modules
+  frontend_node_modules:
+    driver: local
+
+# ─── NETWORKS ─────────────────────────────────────────────────────────────────
+networks:
+  winnyland:
+    driver: bridge
