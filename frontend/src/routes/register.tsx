@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Mail, Lock, User, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, AlertCircle, Loader2 } from "lucide-react";
 import { AuthShell } from "@/components/AuthShell";
 import { useAuthStore } from "@/lib/authStore";
 
@@ -16,12 +16,12 @@ export const Route = createFileRoute("/register")({
 });
 
 function RegisterPage() {
+  const navigate = useNavigate();
   const { register, isLoading, error, clearError } = useAuthStore();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,46 +39,12 @@ function RegisterPage() {
         password,
         password_confirmation: passwordConfirm,
       });
-      // Show the server's success message (includes verification instructions)
-      setSuccessMessage(result.message ?? "Account created! Please check your email to verify.");
+      // Account created but not active yet — send the user to the OTP screen.
+      navigate({ to: "/verify-email", search: { email: result.email } });
     } catch {
       // Error is already set in the store
     }
   };
-
-  // Success state — show verification instructions
-  if (successMessage) {
-    return (
-      <AuthShell title="Check your inbox" subtitle="One last step before you start shopping">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-4 text-center"
-        >
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
-            <CheckCircle2 className="h-8 w-8 text-green-500" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            We sent a verification link to{" "}
-            <span className="font-medium text-foreground">{email}</span>.
-            <br />
-            Click the link in the email to activate your account.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Don't see it? Check your spam folder.
-          </p>
-          <div className="flex flex-col gap-2 pt-2">
-            <Link
-              to="/login"
-              className="w-full rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground text-center block"
-            >
-              Continue to sign in
-            </Link>
-          </div>
-        </motion.div>
-      </AuthShell>
-    );
-  }
 
   return (
     <AuthShell title="Create your account" subtitle="Join the dreamy world of Winny Land">

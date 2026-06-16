@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Payment;
 
+use App\Contracts\HandlesWebhooks;
+use App\Contracts\PaymentGateway;
 use App\Models\Order;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class PaymentService
+class PaymobGateway implements PaymentGateway, HandlesWebhooks
 {
     private string $apiKey;
     private string $integrationId;
@@ -23,7 +25,7 @@ class PaymentService
         $this->hmacSecret    = config('paymob.hmac_secret');
     }
 
-    public function initiatePayment(Order $order): array
+    public function initiate(Order $order): array
     {
         $authToken = $this->getAuthToken();
 

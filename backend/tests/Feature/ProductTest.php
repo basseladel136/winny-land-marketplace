@@ -44,6 +44,7 @@ class ProductTest extends TestCase
 
     public function test_admin_can_create_product(): void
     {
+        /** @var User $admin */
         $admin    = User::factory()->create(['role' => 'admin']);
         $category = Category::factory()->create();
 
@@ -61,6 +62,7 @@ class ProductTest extends TestCase
 
     public function test_non_admin_cannot_create_product(): void
     {
+        /** @var User $user */
         $user     = User::factory()->create(['role' => 'customer']);
         $category = Category::factory()->create();
 

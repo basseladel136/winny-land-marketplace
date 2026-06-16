@@ -10,22 +10,25 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_register(): void
+    public function test_user_can_register_and_receives_an_otp_without_a_token(): void
     {
         $response = $this->postJson('/api/v1/auth/register', [
             'name'                  => 'Test User',
-            'email'                 => 'test@example.com',
-            'password'              => 'password123',
-            'password_confirmation' => 'password123',
+            'email'                 => 'winny.test.user@gmail.com',
+            'password'              => 'Winny#Land7Pass',
+            'password_confirmation' => 'Winny#Land7Pass',
         ]);
 
+        // No token is issued — the account is not usable until verified.
         $response->assertStatus(201)
-            ->assertJsonStructure([
-                'user'  => ['id', 'name', 'email', 'role'],
-                'token',
-            ]);
+            ->assertJsonStructure(['email', 'message'])
+            ->assertJsonMissing(['token' => true])
+            ->assertJsonPath('email', 'winny.test.user@gmail.com');
 
-        $this->assertDatabaseHas('users', ['email' => 'test@example.com']);
+        $this->assertDatabaseHas('users', [
+            'email'             => 'winny.test.user@gmail.com',
+            'email_verified_at' => null,
+        ]);
     }
 
     public function test_user_can_login(): void

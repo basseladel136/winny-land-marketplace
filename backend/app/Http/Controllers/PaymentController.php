@@ -2,41 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\PaymentService;
+use App\Contracts\HandlesWebhooks;
 use App\Models\Order;
+use App\Services\Payment\PaymentManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
-    public function __construct(private PaymentService $service) {}
+    public function __construct(private PaymentManager $payments) {}
 
     public function initiate(Request $request, string $orderNumber): JsonResponse
     {
         $order = $request->user()
             ->orders()
             ->where('order_number', $orderNumber)
-            ->where('payment_method', 'paymob')
             ->where('payment_status', Order::PAYMENT_PENDING)
             ->firstOrFail();
 
-        $result = $this->service->initiatePayment($order);
+        $gateway = $this->payments->gateway($order->payment_method);
 
-        return response()->json(['data' => $result]);
+        return response()->json(['data' => $gateway->initiate($order)]);
     }
 
     public function webhook(Request $request): JsonResponse
     {
+        $gateway = $this->payments->gateway('paymob');
+
+        if (! $gateway instanceof HandlesWebhooks) {
+            return response()->json(['message' => 'Unsupported.'], 400);
+        }
+
         $hmac = $request->query('hmac', '');
         $data = $request->all();
 
-        if (! $this->service->verifyWebhook($data, $hmac)) {
+        if (! $gateway->verifyWebhook($data, $hmac)) {
             Log::warning('Paymob webhook HMAC verification failed', ['hmac' => $hmac]);
             return response()->json(['message' => 'Invalid signature.'], 401);
         }
 
-        $this->service->handleWebhook($data);
+        $gateway->handleWebhook($data);
 
         return response()->json(['message' => 'OK']);
     }

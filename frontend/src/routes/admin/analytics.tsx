@@ -14,6 +14,7 @@ import {
   Legend,
 } from "recharts";
 import { useStore } from "@/lib/store";
+import { formatPrice } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/analytics")({
   component: Analytics,
@@ -62,7 +63,7 @@ function Analytics() {
       <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
           { label: "Total orders", value: orders.length },
-          { label: "Avg. order", value: `$${aov.toFixed(2)}` },
+          { label: "Avg. order", value: formatPrice(aov) },
           { label: "Products", value: products.length },
           { label: "Categories", value: categories.length },
         ].map((s) => (

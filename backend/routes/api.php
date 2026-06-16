@@ -38,6 +38,14 @@ Route::prefix('v1')->middleware(['setLocale', 'throttle:public'])->group(functio
         // Register: 5/min per IP
         Route::post('register', [AuthController::class, 'register'])
             ->middleware('throttle:register');
+
+        // Verify the registration OTP (public — proof of identity is the code).
+        Route::post('verify-otp', [AuthController::class, 'verifyOtp'])
+            ->middleware('throttle:login');
+
+        // Resend a verification OTP to an unverified account.
+        Route::post('resend-otp', [AuthController::class, 'resendOtp'])
+            ->middleware('throttle:verification-resend');
     });
 
     // ── Email verification (GET — clicked from email link) ─────────────────
@@ -77,6 +85,11 @@ Route::prefix('v1')->middleware(['setLocale', 'throttle:public'])->group(functio
             Route::post('logout-all', [AuthController::class, 'logoutAll']);
             Route::get('me',          [AuthController::class, 'me']);
             Route::patch('me',        [AuthController::class, 'update']);
+
+            // Profile dashboard: stats, password change, avatar upload
+            Route::get('stats',       [AuthController::class, 'stats']);
+            Route::patch('password',  [AuthController::class, 'updatePassword']);
+            Route::post('avatar',     [AuthController::class, 'updateAvatar']);
 
             // Resend verification email (3 per 5 minutes)
             Route::post('email/resend', [AuthController::class, 'resendVerification'])

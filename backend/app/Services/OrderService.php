@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Jobs\SendOrderConfirmationEmail;
+use App\Models\Coupon;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -24,23 +26,38 @@ class OrderService
             throw ValidationException::withMessages(['cart' => ['Your cart is empty.']]);
         }
 
-        // Validate stock availability for all items
-        foreach ($cart->items as $item) {
-            if ($item->product->stock < $item->quantity) {
-                throw ValidationException::withMessages([
-                    'stock' => ["{$item->product->name_en} only has {$item->product->stock} items available."],
-                ]);
-            }
-        }
-
         return DB::transaction(function () use ($user, $data, $cart) {
-            $subtotal = $cart->items->sum(fn ($i) => $i->product->price * $i->quantity);
+            // Lock all product rows for update to prevent concurrent overselling
+            $productIds = $cart->items->pluck('product_id')->all();
+            $products   = Product::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
 
-            // Apply coupon
+            // Re-validate stock with locked rows (concurrent requests may have changed it)
+            foreach ($cart->items as $item) {
+                $product = $products->get($item->product_id);
+                if (! $product || $product->stock < $item->quantity) {
+                    $name  = $product?->name_en ?? 'A product';
+                    $avail = $product?->stock ?? 0;
+                    throw ValidationException::withMessages([
+                        'stock' => ["{$name} only has {$avail} items available."],
+                    ]);
+                }
+            }
+
+            $subtotal = $cart->items->sum(fn ($i) => $products->get($i->product_id)->price * $i->quantity);
+
+            // Apply coupon with lock to prevent concurrent over-use
             $discount = 0;
             $coupon   = null;
             if (! empty($data['couponCode'])) {
-                $coupon   = $this->couponService->findValid($data['couponCode'], $subtotal);
+                $coupon = Coupon::where('code', strtoupper($data['couponCode']))
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $coupon || ! $coupon->isValid($subtotal)) {
+                    throw ValidationException::withMessages([
+                        'couponCode' => [__('messages.coupon_invalid')],
+                    ]);
+                }
                 $discount = $coupon->calculateDiscount($subtotal);
             }
 
@@ -63,25 +80,31 @@ class OrderService
                 'notes'            => $data['notes'] ?? null,
                 'locale'           => app()->getLocale(),
             ]);
-            // payment_status is guarded against mass-assignment; set directly
-            $order->payment_status = Order::PAYMENT_UNPAID;
+            // payment_status is guarded against mass-assignment; set directly.
+            // Online methods await a gateway charge (PENDING enables /initiate);
+            // cash on delivery is collected later, so it starts UNPAID.
+            $order->payment_status = $data['paymentMethod'] === 'paymob'
+                ? Order::PAYMENT_PENDING
+                : Order::PAYMENT_UNPAID;
             $order->save();
 
-            // Create order items & deduct stock
+            // Create order items & deduct stock using the locked product records
             foreach ($cart->items as $item) {
+                $product = $products->get($item->product_id);
+
                 $order->items()->create([
                     'product_id'    => $item->product_id,
-                    'product_name'  => $item->product->name_en,
-                    'product_image' => $item->product->image,
-                    'price'         => $item->product->price,
+                    'product_name'  => $product->name_en,
+                    'product_image' => $product->image,
+                    'price'         => $product->price,
                     'quantity'      => $item->quantity,
-                    'subtotal'      => $item->product->price * $item->quantity,
+                    'subtotal'      => $product->price * $item->quantity,
                 ]);
 
-                $item->product->decrement('stock', $item->quantity);
+                $product->decrement('stock', $item->quantity);
             }
 
-            // Increment coupon uses
+            // Increment coupon uses inside the same transaction
             if ($coupon) {
                 $coupon->increment('uses_count');
             }
@@ -89,7 +112,7 @@ class OrderService
             // Clear cart
             $cart->items()->delete();
 
-            // Queue confirmation email
+            // Queue confirmation email (dispatched after commit via after_commit config)
             SendOrderConfirmationEmail::dispatch($order)->onQueue('emails');
 
             return $order->load('items');

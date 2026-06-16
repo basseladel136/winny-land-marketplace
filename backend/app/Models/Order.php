@@ -30,8 +30,8 @@ class Order extends Model
     ];
 
     // payment_status and payment_reference are intentionally excluded from
-    // $fillable — they must only be set by PaymentService via direct assignment,
-    // never through user-controlled mass-assignment paths.
+    // $fillable — they must only be set by the payment gateway / OrderService
+    // via direct assignment, never through user-controlled mass-assignment paths.
     protected $guarded = ['payment_status', 'payment_reference'];
 
     protected $casts = [

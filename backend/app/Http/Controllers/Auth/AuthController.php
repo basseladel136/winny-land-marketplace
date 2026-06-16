@@ -12,7 +12,10 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -25,10 +28,43 @@ class AuthController extends Controller
         $result = $this->auth->register($request->validated());
 
         return response()->json([
-            'user'    => new UserResource($result['user']),
-            'token'   => $result['token'],
-            'message' => 'Registration successful. Please check your email to verify your account.',
+            'email'   => $result['user']->email,
+            'message' => 'We sent a 6-digit verification code to your email. Enter it to activate your account.',
         ], 201);
+    }
+
+    /**
+     * Verify the registration OTP and sign the user in.
+     */
+    public function verifyOtp(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+            'otp'   => ['required', 'string', 'regex:/^\d{6}$/'],
+        ]);
+
+        $result = $this->auth->verifyOtp($data['email'], $data['otp']);
+
+        return response()->json([
+            'user'  => new UserResource($result['user']),
+            'token' => $result['token'],
+        ]);
+    }
+
+    /**
+     * Resend a verification OTP to an unverified account (public, by email).
+     */
+    public function resendOtp(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $this->auth->resendOtp($data['email']);
+
+        return response()->json([
+            'message' => 'If the account exists and is unverified, a new code has been sent.',
+        ]);
     }
 
     // ── Login ─────────────────────────────────────────────────────────────────
@@ -71,14 +107,78 @@ class AuthController extends Controller
     {
         // Explicitly whitelist updatable fields — role/is_admin are never accepted
         $data = $request->validate([
-            'name'   => 'sometimes|string|max:255',
-            'phone'  => 'sometimes|nullable|string|max:20',
-            'locale' => 'sometimes|in:en,ar',
+            'name'    => 'sometimes|string|max:255',
+            'phone'   => 'sometimes|nullable|string|max:20',
+            'address' => 'sometimes|nullable|string|max:500',
+            'locale'  => 'sometimes|in:en,ar',
         ]);
 
         $request->user()->update($data);
 
         return response()->json(['user' => new UserResource($request->user()->fresh())]);
+    }
+
+    /**
+     * Aggregate stats for the authenticated user's profile dashboard.
+     */
+    public function stats(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'data' => [
+                'ordersCount'   => $user->orders()->count(),
+                'totalSpent'    => (float) $user->orders()
+                    ->where('status', '!=', 'cancelled')
+                    ->sum('total'),
+                'wishlistCount' => $user->wishlist()->count(),
+                'reviewsCount'  => $user->reviews()->count(),
+            ],
+        ]);
+    }
+
+    /**
+     * Change the authenticated user's password (requires the current one).
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password'         => ['required', 'confirmed', Password::defaults()],
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($request->input('password')),
+        ]);
+
+        return response()->json(['message' => 'Password updated successfully.']);
+    }
+
+    /**
+     * Upload / replace the authenticated user's avatar image.
+     */
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $user = $request->user();
+
+        // Remove a previously uploaded avatar that lives on our public disk
+        // (skip externally-hosted URLs).
+        if ($user->avatar
+            && ! str_starts_with($user->avatar, 'http')
+            && Storage::disk('public')->exists($user->avatar)
+        ) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+
+        $user->update(['avatar' => $path]);
+
+        return response()->json(['user' => new UserResource($user->fresh())]);
     }
 
     // ── Email Verification ───────────────────────────────────────────────────

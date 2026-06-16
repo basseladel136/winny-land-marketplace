@@ -11,6 +11,14 @@ export type Product = {
   categoryId: string;
 };
 export type CartItem = { productId: string; quantity: number };
+export type Review = {
+  id: string;
+  productId: string;
+  userName: string;
+  rating: number; // 1–5
+  body: string;
+  createdAt: string;
+};
 export type Order = {
   id: string;
   items: { productId: string; name: string; price: number; quantity: number }[];
@@ -21,24 +29,21 @@ export type Order = {
 };
 
 const seedCategories: Category[] = [
-  { id: "c1", name: "Plush Toys", slug: "plush" },
-  { id: "c2", name: "Accessories", slug: "accessories" },
-  { id: "c3", name: "Home Decor", slug: "decor" },
-  { id: "c4", name: "Stationery", slug: "stationery" },
+  { id: "c1", name: "Perfumes", slug: "perfumes" },
+  { id: "c2", name: "Plush Toys", slug: "plush" },
+  { id: "c3", name: "Stationery", slug: "stationery" },
 ];
 
 const img = (seed: string) =>
   `https://images.unsplash.com/photo-${seed}?w=800&auto=format&fit=crop&q=70`;
 
 const seedProducts: Product[] = [
-  { id: "p1", name: "Bunny Cloud Plush", price: 28, description: "Ultra-soft pastel bunny plush, perfect for cuddles.", image: img("1535632787350-4e68ef0ac584"), categoryId: "c1" },
-  { id: "p2", name: "Strawberry Bear", price: 32, description: "Sweet strawberry-themed teddy with embroidered details.", image: img("1559563458-527698bf5295"), categoryId: "c1" },
-  { id: "p3", name: "Pearl Hair Clips Set", price: 14, description: "Elegant pearl-finish clips, set of 6.", image: img("1611591437281-460bfbe1220a"), categoryId: "c2" },
-  { id: "p4", name: "Velvet Scrunchie Trio", price: 12, description: "Three soft velvet scrunchies in pink tones.", image: img("1631635589499-61ed5f6d3eda"), categoryId: "c2" },
-  { id: "p5", name: "Ceramic Pink Vase", price: 45, description: "Hand-glazed ceramic vase in blush pink.", image: img("1602874801007-aa518ddfb2cd"), categoryId: "c3" },
-  { id: "p6", name: "Vanilla Soy Candle", price: 22, description: "Warm vanilla & honey soy wax candle, 8oz.", image: img("1602874801007-bd1d8e6ad2cf"), categoryId: "c3" },
-  { id: "p7", name: "Floral Notebook", price: 16, description: "Hardcover lined notebook with floral print.", image: img("1531346878377-a5be20888e57"), categoryId: "c4" },
-  { id: "p8", name: "Pastel Pen Set", price: 18, description: "Set of 8 gel pens in pastel colors.", image: img("1583485088034-697b5bc36b92"), categoryId: "c4" },
+  { id: "p1", name: "Rose Petal Eau de Parfum", price: 60, description: "Delicate rose and peony eau de parfum, 50ml.", image: img("1541643600914-78b084683601"), categoryId: "c1" },
+  { id: "p2", name: "Vanilla Musk Perfume", price: 55, description: "Warm vanilla and soft musk fragrance, long lasting.", image: img("1592945403244-b3fbafd7f539"), categoryId: "c1" },
+  { id: "p3", name: "Bunny Cloud Plush", price: 28, description: "Ultra-soft pastel bunny plush, perfect for cuddles.", image: img("1535632787350-4e68ef0ac584"), categoryId: "c2" },
+  { id: "p4", name: "Strawberry Bear", price: 32, description: "Sweet strawberry-themed teddy with embroidered details.", image: img("1559563458-527698bf5295"), categoryId: "c2" },
+  { id: "p5", name: "Floral Notebook", price: 16, description: "Hardcover lined notebook with floral print.", image: img("1531346878377-a5be20888e57"), categoryId: "c3" },
+  { id: "p6", name: "Pastel Pen Set", price: 18, description: "Set of 8 gel pens in pastel colors.", image: img("1583485088034-697b5bc36b92"), categoryId: "c3" },
 ];
 
 type StoreState = {
@@ -46,6 +51,7 @@ type StoreState = {
   categories: Category[];
   cart: CartItem[];
   wishlist: string[];
+  reviews: Review[];
   orders: Order[];
   coupons: Record<string, number>; // code -> percent
   addProduct: (p: Omit<Product, "id">) => void;
@@ -59,6 +65,7 @@ type StoreState = {
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
   toggleWishlist: (productId: string) => void;
+  addReview: (review: Omit<Review, "id" | "createdAt">) => void;
   placeOrder: (customer: Order["customer"], total: number) => string;
   updateOrderStatus: (id: string, status: Order["status"]) => void;
 };
@@ -73,6 +80,7 @@ export const useStore = create<StoreState>()(
       categories: seedCategories,
       cart: [],
       wishlist: [],
+      reviews: [],
       orders: [],
       coupons: { WINNY10: 10, LOVE20: 20 },
       addProduct: (p) => set((s) => ({ products: [...s.products, { ...p, id: id() }] })),
@@ -106,6 +114,13 @@ export const useStore = create<StoreState>()(
             ? s.wishlist.filter((x) => x !== productId)
             : [...s.wishlist, productId],
         })),
+      addReview: (review) =>
+        set((s) => ({
+          reviews: [
+            { ...review, id: id(), createdAt: new Date().toISOString() },
+            ...s.reviews,
+          ],
+        })),
       placeOrder: (customer, total) => {
         const oid = id();
         const items = get().cart.map((c) => {
@@ -124,6 +139,12 @@ export const useStore = create<StoreState>()(
       updateOrderStatus: (oid, status) =>
         set((s) => ({ orders: s.orders.map((o) => (o.id === oid ? { ...o, status } : o)) })),
     }),
-    { name: "winny-land-store" }
+    {
+      name: "winny-land-store",
+      // Bumped to v2 when the catalogue moved to Perfumes / Plush Toys /
+      // Stationery. Older persisted state is dropped so stale categories
+      // (Accessories, Home Decor) don't linger in returning browsers.
+      version: 2,
+    }
   )
 );

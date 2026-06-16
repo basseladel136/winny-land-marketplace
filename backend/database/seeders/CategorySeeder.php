@@ -9,24 +9,26 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
+        // The only categories Winny Land currently carries.
         $categories = [
-            ['name_en' => 'Electronics',    'name_ar' => 'إلكترونيات',     'sort_order' => 1],
-            ['name_en' => 'Clothing',        'name_ar' => 'ملابس',           'sort_order' => 2],
-            ['name_en' => 'Home & Garden',   'name_ar' => 'المنزل والحديقة', 'sort_order' => 3],
-            ['name_en' => 'Sports',          'name_ar' => 'رياضة',           'sort_order' => 4],
-            ['name_en' => 'Books',           'name_ar' => 'كتب',             'sort_order' => 5],
-            ['name_en' => 'Toys & Games',    'name_ar' => 'ألعاب',           'sort_order' => 6],
-            ['name_en' => 'Beauty',          'name_ar' => 'جمال',            'sort_order' => 7],
-            ['name_en' => 'Food & Beverages','name_ar' => 'طعام ومشروبات',   'sort_order' => 8],
+            ['name_en' => 'Perfumes',    'name_ar' => 'عطور',        'sort_order' => 1],
+            ['name_en' => 'Plush Toys',  'name_ar' => 'دمى قطيفة',   'sort_order' => 2],
+            ['name_en' => 'Stationery',  'name_ar' => 'قرطاسية',     'sort_order' => 3],
         ];
 
         foreach ($categories as $cat) {
-            Category::firstOrCreate(
+            Category::updateOrCreate(
                 ['name_en' => $cat['name_en']],
                 array_merge($cat, ['is_active' => true])
             );
         }
 
-        $this->command->info('Categories seeded successfully.');
+        // Prune any category that is no longer offered. Products that pointed at
+        // a removed category have their category_id set to null via the FK's
+        // nullOnDelete rule, so no products are deleted.
+        $keep = array_column($categories, 'name_en');
+        Category::whereNotIn('name_en', $keep)->delete();
+
+        $this->command->info('Categories synced: ' . implode(', ', $keep) . '.');
     }
 }

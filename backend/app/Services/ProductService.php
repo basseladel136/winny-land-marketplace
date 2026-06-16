@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 class ProductService
 {
     private const CACHE_TTL = 300; // 5 minutes
+    private const CACHE_TAG = 'products';
 
     public function list(array $filters = [], bool $adminMode = false): LengthAwarePaginator
     {
@@ -21,7 +22,7 @@ class ProductService
 
         $cacheKey = 'products:list:' . md5(serialize($filters));
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($filters, $adminMode) {
+        return Cache::tags([self::CACHE_TAG])->remember($cacheKey, self::CACHE_TTL, function () use ($filters, $adminMode) {
             return $this->buildQuery($filters, $adminMode)->paginate(
                 min((int) ($filters['perPage'] ?? 24), 100)
             );
@@ -45,9 +46,9 @@ class ProductService
         }
 
         if (! empty($filters['search'])) {
-            $q      = $filters['search'];
-            $isPg   = in_array(config('database.default'), ['pgsql', 'postgres']);
-            $op     = $isPg ? 'ILIKE' : 'LIKE';
+            $q    = $filters['search'];
+            $isPg = in_array(config('database.default'), ['pgsql', 'postgres']);
+            $op   = $isPg ? 'ILIKE' : 'LIKE';
             $query->where(function ($q2) use ($q, $op) {
                 $q2->where('name_en', $op, "%{$q}%")
                    ->orWhere('name_ar', $op, "%{$q}%")
@@ -76,8 +77,6 @@ class ProductService
 
     public function find(string $slug, bool $adminMode = false): Product
     {
-        $cacheKey = "product:{$slug}";
-
         if ($adminMode) {
             return Product::with('category')
                 ->withCount('reviews')
@@ -86,7 +85,7 @@ class ProductService
                 ->firstOrFail();
         }
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($slug) {
+        return Cache::tags([self::CACHE_TAG])->remember("product:{$slug}", self::CACHE_TTL, function () use ($slug) {
             return Product::with('category')
                 ->withCount('reviews')
                 ->withAvg('reviews', 'rating')
@@ -107,14 +106,14 @@ class ProductService
     {
         $product = Product::where('slug', $slug)->firstOrFail();
         $product->update($this->mapData($data));
-        $this->clearCache($slug);
+        $this->clearCache();
         return $product->fresh('category');
     }
 
     public function delete(string $slug): void
     {
         $product = Product::where('slug', $slug)->firstOrFail();
-        $this->clearCache($slug);
+        $this->clearCache();
         $product->delete();
     }
 
@@ -136,12 +135,9 @@ class ProductService
         ], fn ($v) => ! is_null($v));
     }
 
-    public function clearCache(?string $slug = null): void
+    public function clearCache(): void
     {
-        if ($slug) {
-            Cache::forget("product:{$slug}");
-        }
-        // Flush list caches
-        Cache::flush();
+        // Flush only the 'products' tagged cache — does not affect sessions or other cache entries
+        Cache::tags([self::CACHE_TAG])->flush();
     }
 }

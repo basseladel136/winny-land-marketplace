@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore, type Order } from "@/lib/store";
+import { formatPrice } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/orders")({
   component: AdminOrders,
@@ -30,7 +31,7 @@ function AdminOrders() {
                   <div className="text-xs text-muted-foreground">{o.customer.address}</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-display text-2xl">${o.total.toFixed(2)}</div>
+                  <div className="font-display text-2xl">{formatPrice(o.total)}</div>
                   <select
                     value={o.status}
                     onChange={(e) => updateStatus(o.id, e.target.value as Order["status"])}
@@ -44,7 +45,7 @@ function AdminOrders() {
                 {o.items.map((it) => (
                   <div key={it.productId} className="flex justify-between py-1">
                     <span className="text-muted-foreground">{it.name} × {it.quantity}</span>
-                    <span>${(it.price * it.quantity).toFixed(2)}</span>
+                    <span>{formatPrice(it.price * it.quantity)}</span>
                   </div>
                 ))}
               </div>

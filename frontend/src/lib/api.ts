@@ -10,7 +10,7 @@
  *   const order = await api.post("/orders", payload);
  */
 
-const BASE_URL = (import.meta.env.VITE_API_URL as string) ?? "http://localhost:8000/api/v1";
+export const BASE_URL = (import.meta.env.VITE_API_URL as string) ?? "http://localhost:8000/api/v1";
 
 // --------------------------------------------------------------------------
 // Token helpers  (reads from the authStore persisted key)
@@ -33,10 +33,12 @@ type RequestOptions = Omit<RequestInit, "body"> & { body?: unknown };
 
 async function request<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
   const token = getToken();
+  const isFormData = options.body instanceof FormData;
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     Accept: "application/json",
+    // Let the browser set the multipart boundary for FormData uploads.
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers as Record<string, string>),
   };
 
@@ -50,7 +52,12 @@ async function request<T = unknown>(path: string, options: RequestOptions = {}):
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    body:
+      options.body === undefined
+        ? undefined
+        : isFormData
+          ? (options.body as FormData)
+          : JSON.stringify(options.body),
   });
 
   if (!res.ok) {
@@ -58,6 +65,8 @@ async function request<T = unknown>(path: string, options: RequestOptions = {}):
     const err = Object.assign(new Error(error.message ?? "API Error"), {
       status: res.status,
       errors: error.errors ?? null,
+      // Full parsed body so callers can read custom flags (e.g. email_unverified).
+      data: error,
     });
     throw err;
   }
@@ -102,7 +111,16 @@ export const authApi = {
     phone?: string;
     locale?: string;
   }) =>
-    api.post<{ user: ApiUser; token: string; message: string }>("/auth/register", data),
+    // Registration no longer returns a token — the user must verify the OTP first.
+    api.post<{ email: string; message: string }>("/auth/register", data),
+
+  /** Verify the registration OTP. On success the user is signed in. */
+  verifyOtp: (data: { email: string; otp: string }) =>
+    api.post<{ user: ApiUser; token: string }>("/auth/verify-otp", data),
+
+  /** Resend the verification OTP to an unverified account. */
+  resendOtp: (email: string) =>
+    api.post<{ message: string }>("/auth/resend-otp", { email }),
 
   login: (data: { email: string; password: string }) =>
     api.post<{ user: ApiUser; token: string }>("/auth/login", data),
@@ -111,8 +129,25 @@ export const authApi = {
 
   me: () => api.get<{ user: ApiUser }>("/auth/me"),
 
-  updateProfile: (data: { name?: string; phone?: string; locale?: string }) =>
+  updateProfile: (data: { name?: string; phone?: string | null; address?: string | null; locale?: string }) =>
     api.patch<{ user: ApiUser }>("/auth/me", data),
+
+  /** Aggregate profile stats (orders, spend, wishlist, reviews) */
+  stats: () => api.get<{ data: ProfileStats }>("/auth/stats"),
+
+  /** Change password (requires the current password) */
+  updatePassword: (data: {
+    current_password: string;
+    password: string;
+    password_confirmation: string;
+  }) => api.patch<{ message: string }>("/auth/password", data),
+
+  /** Upload / replace the avatar image */
+  updateAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    return api.post<{ user: ApiUser }>("/auth/avatar", formData);
+  },
 
   /** Resend email verification link */
   resendVerification: () => api.post<{ message: string }>("/auth/email/resend"),
@@ -206,12 +241,20 @@ export interface ApiUser {
   name: string;
   email: string;
   phone: string | null;
+  address: string | null;
   role: "customer" | "admin";
   locale: "en" | "ar";
   avatar: string | null;
   isActive: boolean;
   emailVerifiedAt: string | null;   // null = unverified
   createdAt: string;
+}
+
+export interface ProfileStats {
+  ordersCount: number;
+  totalSpent: number;
+  wishlistCount: number;
+  reviewsCount: number;
 }
 
 export interface ApiCategory {

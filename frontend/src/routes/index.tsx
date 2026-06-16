@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Winny Land — Sweet things for sweet people" },
-      { name: "description", content: "Plushies, accessories, decor & stationery. Curated, cozy, pink." },
+      { name: "description", content: "Perfumes, plush toys & stationery. Curated, cozy, pink." },
     ],
   }),
   component: Landing,
@@ -140,7 +140,7 @@ function Landing() {
             transition={{ delay: 1.2, duration: 0.6 }}
             className="mt-6 max-w-md text-base text-muted-foreground"
           >
-            Where Gifts, Fragrance &amp; Accessories
+            Where Perfumes, Plush Toys &amp; Stationery
             <br />
             Create Beautiful Moments
           </motion.p>

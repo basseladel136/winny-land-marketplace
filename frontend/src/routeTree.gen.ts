@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EmailVerifiedRouteImport } from './routes/email-verified'
@@ -17,8 +18,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MarketplaceIndexRouteImport } from './routes/marketplace/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as MarketplaceWishlistRouteImport } from './routes/marketplace/wishlist'
+import { Route as MarketplaceProfileRouteImport } from './routes/marketplace/profile'
 import { Route as MarketplaceCheckoutRouteImport } from './routes/marketplace/checkout'
 import { Route as MarketplaceCartRouteImport } from './routes/marketplace/cart'
+import { Route as MarketplaceSlugRouteImport } from './routes/marketplace/$slug'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
@@ -27,6 +30,11 @@ import { Route as AdminCouponsRouteImport } from './routes/admin/coupons'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -67,6 +75,11 @@ const MarketplaceWishlistRoute = MarketplaceWishlistRouteImport.update({
   path: '/marketplace/wishlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketplaceProfileRoute = MarketplaceProfileRouteImport.update({
+  id: '/marketplace/profile',
+  path: '/marketplace/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarketplaceCheckoutRoute = MarketplaceCheckoutRouteImport.update({
   id: '/marketplace/checkout',
   path: '/marketplace/checkout',
@@ -75,6 +88,11 @@ const MarketplaceCheckoutRoute = MarketplaceCheckoutRouteImport.update({
 const MarketplaceCartRoute = MarketplaceCartRouteImport.update({
   id: '/marketplace/cart',
   path: '/marketplace/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceSlugRoute = MarketplaceSlugRouteImport.update({
+  id: '/marketplace/$slug',
+  path: '/marketplace/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -119,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/email-verified': typeof EmailVerifiedRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -126,8 +145,10 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/marketplace/$slug': typeof MarketplaceSlugRoute
   '/marketplace/cart': typeof MarketplaceCartRoute
   '/marketplace/checkout': typeof MarketplaceCheckoutRoute
+  '/marketplace/profile': typeof MarketplaceProfileRoute
   '/marketplace/wishlist': typeof MarketplaceWishlistRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -137,6 +158,7 @@ export interface FileRoutesByTo {
   '/email-verified': typeof EmailVerifiedRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -144,8 +166,10 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/marketplace/$slug': typeof MarketplaceSlugRoute
   '/marketplace/cart': typeof MarketplaceCartRoute
   '/marketplace/checkout': typeof MarketplaceCheckoutRoute
+  '/marketplace/profile': typeof MarketplaceProfileRoute
   '/marketplace/wishlist': typeof MarketplaceWishlistRoute
   '/admin': typeof AdminIndexRoute
   '/marketplace': typeof MarketplaceIndexRoute
@@ -157,6 +181,7 @@ export interface FileRoutesById {
   '/email-verified': typeof EmailVerifiedRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -164,8 +189,10 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/marketplace/$slug': typeof MarketplaceSlugRoute
   '/marketplace/cart': typeof MarketplaceCartRoute
   '/marketplace/checkout': typeof MarketplaceCheckoutRoute
+  '/marketplace/profile': typeof MarketplaceProfileRoute
   '/marketplace/wishlist': typeof MarketplaceWishlistRoute
   '/admin/': typeof AdminIndexRoute
   '/marketplace/': typeof MarketplaceIndexRoute
@@ -178,6 +205,7 @@ export interface FileRouteTypes {
     | '/email-verified'
     | '/login'
     | '/register'
+    | '/verify-email'
     | '/admin/analytics'
     | '/admin/categories'
     | '/admin/coupons'
@@ -185,8 +213,10 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/settings'
     | '/admin/users'
+    | '/marketplace/$slug'
     | '/marketplace/cart'
     | '/marketplace/checkout'
+    | '/marketplace/profile'
     | '/marketplace/wishlist'
     | '/admin/'
     | '/marketplace/'
@@ -196,6 +226,7 @@ export interface FileRouteTypes {
     | '/email-verified'
     | '/login'
     | '/register'
+    | '/verify-email'
     | '/admin/analytics'
     | '/admin/categories'
     | '/admin/coupons'
@@ -203,8 +234,10 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/settings'
     | '/admin/users'
+    | '/marketplace/$slug'
     | '/marketplace/cart'
     | '/marketplace/checkout'
+    | '/marketplace/profile'
     | '/marketplace/wishlist'
     | '/admin'
     | '/marketplace'
@@ -215,6 +248,7 @@ export interface FileRouteTypes {
     | '/email-verified'
     | '/login'
     | '/register'
+    | '/verify-email'
     | '/admin/analytics'
     | '/admin/categories'
     | '/admin/coupons'
@@ -222,8 +256,10 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/settings'
     | '/admin/users'
+    | '/marketplace/$slug'
     | '/marketplace/cart'
     | '/marketplace/checkout'
+    | '/marketplace/profile'
     | '/marketplace/wishlist'
     | '/admin/'
     | '/marketplace/'
@@ -235,14 +271,24 @@ export interface RootRouteChildren {
   EmailVerifiedRoute: typeof EmailVerifiedRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
+  MarketplaceSlugRoute: typeof MarketplaceSlugRoute
   MarketplaceCartRoute: typeof MarketplaceCartRoute
   MarketplaceCheckoutRoute: typeof MarketplaceCheckoutRoute
+  MarketplaceProfileRoute: typeof MarketplaceProfileRoute
   MarketplaceWishlistRoute: typeof MarketplaceWishlistRoute
   MarketplaceIndexRoute: typeof MarketplaceIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -299,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplaceWishlistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace/profile': {
+      id: '/marketplace/profile'
+      path: '/marketplace/profile'
+      fullPath: '/marketplace/profile'
+      preLoaderRoute: typeof MarketplaceProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/marketplace/checkout': {
       id: '/marketplace/checkout'
       path: '/marketplace/checkout'
@@ -311,6 +364,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace/cart'
       fullPath: '/marketplace/cart'
       preLoaderRoute: typeof MarketplaceCartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/$slug': {
+      id: '/marketplace/$slug'
+      path: '/marketplace/$slug'
+      fullPath: '/marketplace/$slug'
+      preLoaderRoute: typeof MarketplaceSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -397,8 +457,11 @@ const rootRouteChildren: RootRouteChildren = {
   EmailVerifiedRoute: EmailVerifiedRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
+  MarketplaceSlugRoute: MarketplaceSlugRoute,
   MarketplaceCartRoute: MarketplaceCartRoute,
   MarketplaceCheckoutRoute: MarketplaceCheckoutRoute,
+  MarketplaceProfileRoute: MarketplaceProfileRoute,
   MarketplaceWishlistRoute: MarketplaceWishlistRoute,
   MarketplaceIndexRoute: MarketplaceIndexRoute,
 }

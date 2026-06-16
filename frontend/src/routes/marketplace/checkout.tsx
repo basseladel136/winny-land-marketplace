@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Tag } from "lucide-react";
 import { MarketplaceNav } from "@/components/MarketplaceNav";
 import { useStore } from "@/lib/store";
+import { formatPrice } from "@/lib/utils";
 
 export const Route = createFileRoute("/marketplace/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Winny Land" }] }),
@@ -24,6 +25,9 @@ function Checkout() {
   const [couponMsg, setCouponMsg] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", address: "" });
   const [placed, setPlaced] = useState<string | null>(null);
+  const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (navTimerRef.current) clearTimeout(navTimerRef.current); }, []);
 
   const discountAmt = (subtotal * appliedDiscount) / 100;
   const total = Math.max(0, subtotal - discountAmt);
@@ -44,7 +48,7 @@ function Checkout() {
     if (!items.length) return;
     const id = placeOrder(form, total);
     setPlaced(id);
-    setTimeout(() => navigate({ to: "/marketplace" }), 2200);
+    navTimerRef.current = setTimeout(() => navigate({ to: "/marketplace" }), 2200);
   };
 
   if (placed) {
@@ -85,7 +89,7 @@ function Checkout() {
               disabled={!items.length}
               className="mt-4 w-full rounded-full bg-primary py-3.5 text-sm font-medium text-primary-foreground transition hover:bg-pink hover:text-primary disabled:opacity-50"
             >
-              Place order — ${total.toFixed(2)}
+              Place order — {formatPrice(total)}
             </button>
           </form>
 
@@ -96,7 +100,7 @@ function Checkout() {
                 {items.map((i) => (
                   <div key={i.productId} className="flex justify-between">
                     <span className="text-muted-foreground">{i.product.name} × {i.quantity}</span>
-                    <span>${(i.product.price * i.quantity).toFixed(2)}</span>
+                    <span>{formatPrice(i.product.price * i.quantity)}</span>
                   </div>
                 ))}
               </div>
@@ -121,11 +125,11 @@ function Checkout() {
             </div>
 
             <div className="space-y-2 border-t border-border pt-4 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatPrice(subtotal)}</span></div>
               {appliedDiscount > 0 && (
-                <div className="flex justify-between text-pink"><span>Discount ({appliedDiscount}%)</span><span>-${discountAmt.toFixed(2)}</span></div>
+                <div className="flex justify-between text-pink"><span>Discount ({appliedDiscount}%)</span><span>-{formatPrice(discountAmt)}</span></div>
               )}
-              <div className="flex justify-between text-base font-semibold pt-2 border-t border-border"><span>Total</span><span>${total.toFixed(2)}</span></div>
+              <div className="flex justify-between text-base font-semibold pt-2 border-t border-border"><span>Total</span><span>{formatPrice(total)}</span></div>
             </div>
           </aside>
         </div>

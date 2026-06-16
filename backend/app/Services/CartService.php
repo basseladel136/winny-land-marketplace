@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
@@ -44,7 +43,7 @@ class CartService
             ]);
         }
 
-        return $this->getOrCreate($user);
+        return $cart->load(['items.product']);
     }
 
     public function updateItem(User $user, int $productId, int $quantity): Cart
@@ -60,14 +59,15 @@ class CartService
         $cart = $this->getOrCreate($user);
         $cart->items()->where('product_id', $productId)->update(['quantity' => $quantity]);
 
-        return $this->getOrCreate($user);
+        return $cart->load(['items.product']);
     }
 
     public function removeItem(User $user, int $productId): Cart
     {
         $cart = $this->getOrCreate($user);
         $cart->items()->where('product_id', $productId)->delete();
-        return $this->getOrCreate($user);
+
+        return $cart->load(['items.product']);
     }
 
     public function clear(User $user): void
@@ -79,19 +79,28 @@ class CartService
     public function sync(User $user, array $items): Cart
     {
         $cart = $this->getOrCreate($user);
+
         foreach ($items as $item) {
             $productId = $item['productId'];
             $qty       = (int) ($item['quantity'] ?? 1);
             $product   = Product::find($productId);
-            if (! $product || $qty <= 0) continue;
+
+            if (! $product || $qty <= 0) {
+                continue;
+            }
+
+            // Clamp to available stock
+            $qty = min($qty, $product->stock);
 
             $existingItem = $cart->items()->where('product_id', $productId)->first();
             if ($existingItem) {
-                $existingItem->update(['quantity' => max($existingItem->quantity, $qty)]);
+                // Sync replaces quantity — takes the client's value, clamped to stock
+                $existingItem->update(['quantity' => $qty]);
             } else {
-                $cart->items()->create(['product_id' => $productId, 'quantity' => min($qty, $product->stock)]);
+                $cart->items()->create(['product_id' => $productId, 'quantity' => $qty]);
             }
         }
-        return $this->getOrCreate($user);
+
+        return $cart->load(['items.product']);
     }
 }

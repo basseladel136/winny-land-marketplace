@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, ShoppingBag, Search, LayoutDashboard, LogIn } from "lucide-react";
+import { Heart, ShoppingBag, Search, LayoutDashboard, LogIn, User } from "lucide-react";
 
 function NavStar({ size = 10 }: { size?: number }) {
   return (
@@ -78,7 +78,7 @@ export function MarketplaceNav({
             <input
               value={query ?? ""}
               onChange={(e) => onQuery(e.target.value)}
-              placeholder="Search plushies, accessories, decor..."
+              placeholder="Search perfumes, plush toys, stationery..."
               className="w-full rounded-full border border-border bg-secondary/50 py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-pink focus:bg-background"
             />
           </div>
@@ -116,6 +116,18 @@ export function MarketplaceNav({
             >
               <LogIn className="h-3.5 w-3.5" />
               Sign In
+            </Link>
+          )}
+
+          {/* Profile — only shown when the user is authenticated */}
+          {isAuthenticated && (
+            <Link
+              to="/marketplace/profile"
+              className="hover-pink ml-1 rounded-full p-2.5"
+              title="Profile"
+              aria-label="My profile"
+            >
+              <User className="h-5 w-5" />
             </Link>
           )}
 

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Save } from "lucide-react";
 
 export const Route = createFileRoute("/admin/settings")({
@@ -10,15 +10,19 @@ function AdminSettings() {
   const [form, setForm] = useState({
     storeName: "Winny Land",
     email: "hello@winnyland.shop",
-    currency: "USD",
+    currency: "EGP",
     tagline: "Soft, dreamy, and forever charming.",
   });
   const [saved, setSaved] = useState(false);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (savedTimerRef.current) clearTimeout(savedTimerRef.current); }, []);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setSaved(true);
-    setTimeout(() => setSaved(false), 1800);
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    savedTimerRef.current = setTimeout(() => setSaved(false), 1800);
   };
 
   return (
@@ -54,6 +58,7 @@ function AdminSettings() {
             onChange={(e) => setForm({ ...form, currency: e.target.value })}
             className="input"
           >
+            <option>EGP</option>
             <option>USD</option>
             <option>EUR</option>
             <option>GBP</option>

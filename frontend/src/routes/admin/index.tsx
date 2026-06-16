@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Package, ShoppingCart, DollarSign, Tags, TrendingUp } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { formatPrice } from "@/lib/utils";
 import {
   LineChart,
   Line,
@@ -25,7 +26,7 @@ function Dashboard() {
   const revenue = orders.reduce((n, o) => n + o.total, 0);
 
   const stats = [
-    { label: "Revenue", value: `$${revenue.toFixed(2)}`, icon: DollarSign, accent: "from-pink to-pink-soft" },
+    { label: "Revenue", value: formatPrice(revenue), icon: DollarSign, accent: "from-pink to-pink-soft" },
     { label: "Orders", value: orders.length, icon: ShoppingCart, accent: "from-pink-soft to-pink" },
     { label: "Products", value: products.length, icon: Package, accent: "from-pink to-pink-soft" },
     { label: "Categories", value: categories.length, icon: Tags, accent: "from-pink-soft to-pink" },
@@ -180,7 +181,7 @@ function Dashboard() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-semibold">${o.total.toFixed(2)}</div>
+                  <div className="font-semibold">{formatPrice(o.total)}</div>
                   <div className="text-xs capitalize text-muted-foreground">{o.status}</div>
                 </div>
               </div>

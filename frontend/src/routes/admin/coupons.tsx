@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Plus, Pencil, Trash2, X, Loader2, ToggleLeft, ToggleRight,
   Ticket, AlertCircle, CheckCircle2,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { formatPrice } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/coupons")({
   component: AdminCoupons,
@@ -56,7 +57,7 @@ function fmtDate(iso: string | null) {
 
 function fmtDiscount(c: ApiCoupon) {
   if (c.type === "percent") return `${c.value}%`;
-  return `$${c.value.toFixed(2)}`;
+  return formatPrice(c.value);
 }
 
 // ---------------------------------------------------------------------------
@@ -257,6 +258,8 @@ function AdminCoupons() {
   const [modalOpen, setModalOpen]   = useState(false);
   const [editing, setEditing]       = useState<ApiCoupon | null>(null);
   const [toast, setToast]           = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); }, []);
   const [deleting, setDeleting]     = useState<number | null>(null);
 
   // ── Fetch coupons ──────────────────────────────────────────────────────────
@@ -277,8 +280,9 @@ function AdminCoupons() {
 
   // ── Toast helper ───────────────────────────────────────────────────────────
   const showToast = (msg: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast(msg);
-    setTimeout(() => setToast(null), 3000);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3000);
   };
 
   // ── CRUD handlers ──────────────────────────────────────────────────────────

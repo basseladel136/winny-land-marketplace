@@ -1,6 +1,8 @@
 import { Heart, Plus } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 import { useStore, type Product } from "@/lib/store";
+import { formatPrice } from "@/lib/utils";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const addToCart = useStore((s) => s.addToCart);
@@ -17,14 +19,23 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-pink hover:shadow-[0_8px_30px_-12px_oklch(0.85_0.09_15/0.4)]"
     >
       <div className="relative aspect-square overflow-hidden bg-secondary">
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        <Link
+          to="/marketplace/$slug"
+          params={{ slug: product.id }}
+          aria-label={`View ${product.name}`}
+        >
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </Link>
         <button
-          onClick={() => toggleWishlist(product.id)}
+          onClick={(e) => {
+            e.preventDefault();
+            toggleWishlist(product.id);
+          }}
           aria-label="Toggle wishlist"
           className="absolute right-3 top-3 rounded-full bg-background/90 p-2 backdrop-blur transition hover:bg-pink"
         >
@@ -37,9 +48,13 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             {category.name}
           </span>
         )}
-        <h3 className="font-display text-lg leading-tight">{product.name}</h3>
+        <Link to="/marketplace/$slug" params={{ slug: product.id }}>
+          <h3 className="font-display text-lg leading-tight transition-colors hover:text-pink">
+            {product.name}
+          </h3>
+        </Link>
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="text-lg font-semibold">${product.price}</span>
+          <span className="text-lg font-semibold">{formatPrice(product.price)}</span>
           <button
             onClick={() => addToCart(product.id)}
             className="hover-pink inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium"

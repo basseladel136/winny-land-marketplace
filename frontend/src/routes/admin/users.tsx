@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { Mail, ShoppingBag } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { formatPrice } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/users")({
   component: AdminUsers,
@@ -69,7 +70,7 @@ function AdminUsers() {
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <ShoppingBag className="h-3.5 w-3.5" /> {u.orders} orders
                 </div>
-                <div className="font-semibold">${u.spent.toFixed(2)}</div>
+                <div className="font-semibold">{formatPrice(u.spent)}</div>
               </div>
             </div>
           ))}

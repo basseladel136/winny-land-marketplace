@@ -33,7 +33,9 @@ interface AuthState {
     password_confirmation: string;
     phone?: string;
     locale?: string;
-  }) => Promise<{ message: string }>;
+  }) => Promise<{ email: string; message: string }>;
+  verifyOtp: (email: string, otp: string) => Promise<void>;
+  resendOtp: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchMe: () => Promise<void>;
   setUser: (user: ApiUser) => void;
@@ -68,7 +70,17 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
         } catch (err: unknown) {
-          const apiErr = err as { errors?: { email?: string[] }; message?: string };
+          const apiErr = err as {
+            errors?: { email?: string[] };
+            message?: string;
+            data?: { email_unverified?: boolean };
+          };
+          // Unverified accounts are not an error to display — the page redirects
+          // the user to the OTP screen instead.
+          if (apiErr?.data?.email_unverified) {
+            set({ isLoading: false, isAuthenticated: false });
+            throw err;
+          }
           const message =
             apiErr?.errors?.email?.[0] ??
             apiErr?.message ??
@@ -81,15 +93,10 @@ export const useAuthStore = create<AuthState>()(
       register: async (data) => {
         set({ isLoading: true, error: null });
         try {
+          // No token is returned — the user must verify the OTP before signing in.
           const result = await authApi.register(data);
-          set({
-            user: result.user,
-            token: result.token,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
-          return { message: result.message };
+          set({ isLoading: false, error: null });
+          return { email: result.email, message: result.message };
         } catch (err: unknown) {
           const apiErr = err as { errors?: Record<string, string[]>; message?: string };
           // Surface the first validation error or generic message
@@ -100,6 +107,32 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false, error: message, isAuthenticated: false });
           throw err;
         }
+      },
+
+      verifyOtp: async (email, otp) => {
+        set({ isLoading: true, error: null });
+        try {
+          const result = await authApi.verifyOtp({ email, otp });
+          set({
+            user: result.user,
+            token: result.token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (err: unknown) {
+          const apiErr = err as { errors?: Record<string, string[]>; message?: string };
+          const firstError = apiErr?.errors
+            ? Object.values(apiErr.errors).flat()[0]
+            : undefined;
+          const message = firstError ?? apiErr?.message ?? "Verification failed. Please try again.";
+          set({ isLoading: false, error: message });
+          throw err;
+        }
+      },
+
+      resendOtp: async (email) => {
+        await authApi.resendOtp(email);
       },
 
       logout: async () => {

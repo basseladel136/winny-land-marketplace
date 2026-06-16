@@ -2,12 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { Plus, Pencil, Trash2, X, Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useStore, type Product } from "@/lib/store";
+import { BASE_URL } from "@/lib/api";
+import { formatPrice } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/products")({
   component: AdminProducts,
 });
 
 const empty = { name: "", price: 0, description: "", image: "", categoryId: "" };
+
+// Columns the uploaded .xlsx must contain (mirrors the backend importer).
+const REQUIRED_COLUMNS = ["name", "category", "description", "image", "price"] as const;
 
 // ---------------------------------------------------------------------------
 // Types for import summary
@@ -58,7 +63,7 @@ function ImportPanel() {
       formData.append("file", file);
 
       const res = await fetch(
-        `${(import.meta.env.VITE_API_URL as string) ?? "http://localhost:8000/api/v1"}/admin/products/import`,
+        `${BASE_URL}/admin/products/import`,
         {
           method: "POST",
           headers: {
@@ -95,9 +100,29 @@ function ImportPanel() {
         <div>
           <h2 className="font-display text-xl">Import Products</h2>
           <p className="text-xs text-muted-foreground">
-            Upload an Excel (.xlsx) file — columns: <span className="font-mono">name, description, price, stock, image_url</span>
+            Upload an Excel (.xlsx) file. The first row must be a header row.
           </p>
         </div>
+      </div>
+
+      {/* Required columns notice */}
+      <div className="mt-4 rounded-2xl border border-pink/30 bg-pink/5 px-4 py-3">
+        <p className="text-sm font-medium">The sheet must contain these columns:</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {REQUIRED_COLUMNS.map((col) => (
+            <span
+              key={col}
+              className="inline-flex items-center gap-1 rounded-full border border-pink/40 bg-background px-3 py-1 font-mono text-xs"
+            >
+              <span className="text-pink">*</span>
+              {col}
+            </span>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Optional: <span className="font-mono">stock</span> (defaults to 0). New categories are created
+          automatically if they don't already exist.
+        </p>
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -248,7 +273,7 @@ function AdminProducts() {
                     </div>
                   </td>
                   <td className="p-4 hidden md:table-cell text-muted-foreground">{cat?.name ?? "—"}</td>
-                  <td className="p-4 font-semibold">${p.price}</td>
+                  <td className="p-4 font-semibold">{formatPrice(p.price)}</td>
                   <td className="p-4">
                     <div className="flex justify-end gap-1">
                       <button onClick={() => openEdit(p)} className="rounded-lg p-2 hover-pink"><Pencil className="h-4 w-4" /></button>
@@ -285,7 +310,7 @@ function AdminProducts() {
               <div>
                 <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Image</label>
                 <input type="file" accept="image/*" onChange={onImage} className="text-sm" />
-                {!form.image && <input placeholder="Or paste image URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-pink" />}
+                <input placeholder="Or paste image URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-pink" />
                 {form.image && <img src={form.image} alt="" className="mt-2 h-24 w-24 rounded-lg object-cover" />}
               </div>
             </div>

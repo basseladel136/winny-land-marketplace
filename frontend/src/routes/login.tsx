@@ -35,8 +35,13 @@ function LoginPage() {
       } else {
         navigate({ to: "/marketplace" });
       }
-    } catch {
-      // Error is already set in the store
+    } catch (err) {
+      // Unverified accounts get a fresh OTP — route them to the verification screen.
+      const apiErr = err as { data?: { email_unverified?: boolean } };
+      if (apiErr?.data?.email_unverified) {
+        navigate({ to: "/verify-email", search: { email } });
+      }
+      // Otherwise the error is already set in the store
     }
   };
 

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2, ArrowRight } from "lucide-react";
 import { MarketplaceNav } from "@/components/MarketplaceNav";
 import { useStore } from "@/lib/store";
+import { formatPrice } from "@/lib/utils";
 
 export const Route = createFileRoute("/marketplace/cart")({
   head: () => ({ meta: [{ title: "Cart — Winny Land" }] }),
@@ -38,7 +39,7 @@ function CartPage() {
                   <img src={i.product.image} alt={i.product.name} className="h-24 w-24 rounded-xl object-cover" />
                   <div className="flex flex-1 flex-col">
                     <h3 className="font-display text-lg">{i.product.name}</h3>
-                    <p className="text-sm text-muted-foreground">${i.product.price}</p>
+                    <p className="text-sm text-muted-foreground">{formatPrice(i.product.price)}</p>
                     <div className="mt-auto flex items-center justify-between">
                       <div className="inline-flex items-center gap-2 rounded-full border border-border">
                         <button onClick={() => updateQty(i.productId, i.quantity - 1)} className="p-2 hover-pink rounded-l-full">
@@ -54,7 +55,7 @@ function CartPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="font-semibold">${(i.product.price * i.quantity).toFixed(2)}</div>
+                  <div className="font-semibold">{formatPrice(i.product.price * i.quantity)}</div>
                 </div>
               ))}
             </div>
@@ -62,10 +63,10 @@ function CartPage() {
             <aside className="h-fit rounded-2xl border border-border bg-secondary/40 p-6">
               <h2 className="font-display text-2xl">Summary</h2>
               <div className="mt-4 space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatPrice(subtotal)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span>Free</span></div>
                 <div className="my-3 border-t border-border" />
-                <div className="flex justify-between text-base font-semibold"><span>Total</span><span>${subtotal.toFixed(2)}</span></div>
+                <div className="flex justify-between text-base font-semibold"><span>Total</span><span>{formatPrice(subtotal)}</span></div>
               </div>
               <Link
                 to="/marketplace/checkout"

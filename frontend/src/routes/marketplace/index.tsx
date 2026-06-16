@@ -9,7 +9,7 @@ export const Route = createFileRoute("/marketplace/")({
   head: () => ({
     meta: [
       { title: "Marketplace — Winny Land" },
-      { name: "description", content: "Browse plushies, accessories, decor and stationery." },
+      { name: "description", content: "Browse perfumes, plush toys and stationery." },
     ],
   }),
   component: Marketplace,
