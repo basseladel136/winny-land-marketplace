@@ -5,6 +5,7 @@ namespace App\Services\Payment;
 use App\Contracts\HandlesWebhooks;
 use App\Contracts\PaymentGateway;
 use App\Models\Order;
+use App\Services\AnalyticsService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -185,5 +186,9 @@ class PaymobGateway implements PaymentGateway, HandlesWebhooks
         }
 
         Log::info('Paymob webhook processed', ['order' => $orderNumber, 'success' => $success]);
+
+        if ($success) {
+            AnalyticsService::clearCache();
+        }
     }
 }

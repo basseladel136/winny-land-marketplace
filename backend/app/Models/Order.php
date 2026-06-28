@@ -70,7 +70,9 @@ class Order extends Model
     public static function generateOrderNumber(): string
     {
         $year = date('Y');
-        $last = static::whereYear('created_at', $year)->latest()->first();
+        // Lock the latest order row so concurrent transactions cannot read the
+        // same sequence value and produce a duplicate order number.
+        $last = static::whereYear('created_at', $year)->lockForUpdate()->latest()->first();
         $seq  = $last ? (intval(substr($last->order_number, -5)) + 1) : 1;
         return "WL-{$year}-" . str_pad($seq, 5, '0', STR_PAD_LEFT);
     }

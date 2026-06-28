@@ -83,7 +83,7 @@ class CartService
         foreach ($items as $item) {
             $productId = $item['productId'];
             $qty       = (int) ($item['quantity'] ?? 1);
-            $product   = Product::find($productId);
+            $product = Product::where('id', $productId)->where('is_active', true)->first();
 
             if (! $product || $qty <= 0) {
                 continue;

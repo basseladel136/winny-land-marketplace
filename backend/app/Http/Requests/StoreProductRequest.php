@@ -20,7 +20,7 @@ class StoreProductRequest extends FormRequest
             'comparePrice'   => ['nullable', 'numeric', 'min:0'],
             'stock'          => ['required', 'integer', 'min:0'],
             'sku'            => ['nullable', 'string', 'max:100', 'unique:products,sku'],
-            'image'          => ['nullable', 'url', 'max:500'],
+            'image'          => ['nullable', 'url:http,https', 'max:500'],
             'isActive'       => ['nullable', 'boolean'],
             'isFeatured'     => ['nullable', 'boolean'],
         ];
