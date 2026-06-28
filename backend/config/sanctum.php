@@ -50,7 +50,10 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Tokens expire after 30 days of issuance (in minutes).
+    // SECURITY: Null means tokens never expire, which is a persistent session risk.
+    // Users who log out have their token deleted; this covers abandoned/stolen tokens.
+    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 43200), // 30 days
 
     /*
     |--------------------------------------------------------------------------
@@ -65,7 +68,9 @@ return [
     |
     */
 
-    'token_prefix' => env('SANCTUM_TOKEN_PREFIX', ''),
+    // Prefix tokens so secret-scanning tools (GitHub, GitLab) can auto-detect and
+    // revoke accidentally committed tokens.
+    'token_prefix' => env('SANCTUM_TOKEN_PREFIX', 'wl_'),
 
     /*
     |--------------------------------------------------------------------------

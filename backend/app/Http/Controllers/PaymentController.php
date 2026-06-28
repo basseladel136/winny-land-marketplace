@@ -38,7 +38,12 @@ class PaymentController extends Controller
         $data = $request->all();
 
         if (! $gateway->verifyWebhook($data, $hmac)) {
-            Log::warning('Paymob webhook HMAC verification failed', ['hmac' => $hmac]);
+            // SECURITY: Never log the raw HMAC value — it is a shared secret.
+            // Log a truncated fingerprint for correlation only.
+            Log::warning('Paymob webhook HMAC verification failed', [
+                'hmac_prefix' => $hmac ? substr($hmac, 0, 8) . '...' : 'empty',
+                'ip'          => $request->ip(),
+            ]);
             return response()->json(['message' => 'Invalid signature.'], 401);
         }
 

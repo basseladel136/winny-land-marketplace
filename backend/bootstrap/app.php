@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\TrustProxies;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -22,6 +24,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health:   '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+
+        // Prepend TrustProxies so $request->ip() is correct for rate limiting
+        $middleware->prepend(TrustProxies::class);
+
+        // Append security headers to every response
+        $middleware->append(SecurityHeaders::class);
 
         // Middleware aliases
         $middleware->alias([
@@ -57,11 +65,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
 
-            // Rate limit exceeded → 429
+            // Rate limit exceeded → 429 with Retry-After so clients back off correctly
             if ($e instanceof ThrottleRequestsException) {
+                $retryAfter = $e->getHeaders()['Retry-After'] ?? null;
                 return response()->json([
-                    'message' => 'Too many requests. Please slow down and try again later.',
-                ], 429);
+                    'message'     => 'Too many requests. Please slow down and try again later.',
+                    'retry_after' => $retryAfter ? (int) $retryAfter : null,
+                ], 429, $e->getHeaders());
             }
 
             // Generic HTTP exceptions (403, 404, etc.)

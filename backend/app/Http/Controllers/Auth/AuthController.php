@@ -12,6 +12,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
@@ -123,16 +124,24 @@ class AuthController extends Controller
      */
     public function stats(Request $request): JsonResponse
     {
+        // PERFORMANCE FIX: replace 4 separate DB round-trips with one aggregate query.
         $user = $request->user();
+        $id   = $user->id;
+
+        $row = \Illuminate\Support\Facades\DB::selectOne("
+            SELECT
+                (SELECT COUNT(*) FROM orders WHERE user_id = ?) AS orders_count,
+                (SELECT COALESCE(SUM(total), 0) FROM orders WHERE user_id = ? AND status != 'cancelled') AS total_spent,
+                (SELECT COUNT(*) FROM wishlists WHERE user_id = ?) AS wishlist_count,
+                (SELECT COUNT(*) FROM reviews WHERE user_id = ?) AS reviews_count
+        ", [$id, $id, $id, $id]);
 
         return response()->json([
             'data' => [
-                'ordersCount'   => $user->orders()->count(),
-                'totalSpent'    => (float) $user->orders()
-                    ->where('status', '!=', 'cancelled')
-                    ->sum('total'),
-                'wishlistCount' => $user->wishlist()->count(),
-                'reviewsCount'  => $user->reviews()->count(),
+                'ordersCount'   => (int) $row->orders_count,
+                'totalSpent'    => (float) $row->total_spent,
+                'wishlistCount' => (int) $row->wishlist_count,
+                'reviewsCount'  => (int) $row->reviews_count,
             ],
         ]);
     }
@@ -147,9 +156,16 @@ class AuthController extends Controller
             'password'         => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $request->user()->update([
+        $user = $request->user();
+
+        $user->update([
             'password' => Hash::make($request->input('password')),
         ]);
+
+        // Revoke all tokens except the current one so other devices must re-login.
+        // SECURITY: Without this, a compromised password change wouldn't kick out
+        // an active attacker who already has a token.
+        $user->tokens()->where('id', '!=', $user->currentAccessToken()->id)->delete();
 
         return response()->json(['message' => 'Password updated successfully.']);
     }

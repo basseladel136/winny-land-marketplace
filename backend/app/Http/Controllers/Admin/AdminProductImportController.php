@@ -96,9 +96,15 @@ class AdminProductImportController extends Controller
 
                 $inserted++;
             } catch (Throwable $e) {
+                // SECURITY: Never expose raw DB error messages to clients — they
+                // can reveal table structure, constraint names, and server internals.
+                \Illuminate\Support\Facades\Log::error('Product import DB error', [
+                    'row'       => $rowIndex + 2,
+                    'exception' => $e->getMessage(),
+                ]);
                 $failed[] = [
                     'row'     => $rowIndex + 2,
-                    'reasons' => ['DB error: ' . $e->getMessage()],
+                    'reasons' => ['Row could not be saved due to a database error. Check server logs.'],
                 ];
             }
         }
@@ -218,12 +224,20 @@ class AdminProductImportController extends Controller
             $reasons[] = 'description is required.';
         }
 
-        // image — required, must be a valid URL
+        // image — required, must be a valid http/https URL.
+        // SECURITY: filter_var(FILTER_VALIDATE_URL) accepts file://, ftp://, etc.
+        // We restrict to http/https to prevent storing internal service URLs that
+        // could be rendered in browsers or trigger SSRF if ever fetched server-side.
         $image = $this->imageValue($row);
         if ($image === null || trim((string) $image) === '') {
             $reasons[] = 'image is required.';
-        } elseif (! filter_var(trim((string) $image), FILTER_VALIDATE_URL)) {
-            $reasons[] = 'image must be a valid URL.';
+        } else {
+            $imageStr = trim((string) $image);
+            $parsed   = parse_url($imageStr);
+            $scheme   = strtolower($parsed['scheme'] ?? '');
+            if (! filter_var($imageStr, FILTER_VALIDATE_URL) || ! in_array($scheme, ['http', 'https'], true)) {
+                $reasons[] = 'image must be a valid http or https URL.';
+            }
         }
 
         // price — required, numeric, >= 0

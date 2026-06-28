@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Services\AnalyticsService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AdminAnalyticsController extends Controller
 {
@@ -18,9 +19,10 @@ class AdminAnalyticsController extends Controller
         ]);
     }
 
-    public function customers(): JsonResponse
+    public function customers(Request $request): JsonResponse
     {
-        $result = $this->service->customers();
+        $page   = max(1, (int) $request->query('page', 1));
+        $result = $this->service->customers($page);
 
         return response()->json(['data' => $result]);
     }
