@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthService
@@ -38,9 +39,19 @@ class AuthService
         $user->role = $isAdmin ? 'admin' : 'customer';
         $user->save();
 
-        // Dispatch Registered event → triggers the OTP verification email.
-        // No token is returned: the user must verify before they can sign in.
-        event(new Registered($user));
+        // Dispatch Registered event → triggers the OTP verification email via
+        // the framework's SendEmailVerificationNotification listener.
+        // BUG FIX: Wrap in try-catch so SMTP failures during registration don't
+        // return a 500. The user account is already created; they can use the
+        // resend endpoint to get a fresh OTP if the first delivery fails.
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            Log::error('OTP email delivery failed during registration', [
+                'user_id' => $user->id,
+                'error'   => $e->getMessage(),
+            ]);
+        }
 
         return compact('user');
     }
@@ -90,7 +101,16 @@ class AuthService
         $user = User::where('email', $email)->first();
 
         if ($user && ! $user->hasVerifiedEmail()) {
-            $user->sendEmailVerificationNotification();
+            try {
+                $user->sendEmailVerificationNotification();
+            } catch (\Throwable $e) {
+                // Log but do not expose: the response is intentionally ambiguous
+                // to prevent email enumeration. The user can retry the resend.
+                Log::error('OTP email delivery failed during resend', [
+                    'user_id' => $user->id,
+                    'error'   => $e->getMessage(),
+                ]);
+            }
         }
     }
 
@@ -117,8 +137,22 @@ class AuthService
 
         // Block sign-in until the email is verified. Send a fresh code and tell
         // the frontend to route the user to the OTP screen.
+        //
+        // BUG FIX: VerifyEmailOtp uses Queueable without ShouldQueue, so the
+        // email is delivered synchronously during this request. If SMTP fails,
+        // the exception would have propagated as a 500 before, leaving the user
+        // with an OTP hash in the DB but no email. Now we log the failure and
+        // still throw EmailNotVerifiedException so the frontend shows the correct
+        // screen — the user can request a fresh code via the resend endpoint.
         if (! $user->hasVerifiedEmail()) {
-            $user->sendEmailVerificationNotification();
+            try {
+                $user->sendEmailVerificationNotification();
+            } catch (\Throwable $e) {
+                Log::error('OTP email delivery failed during login', [
+                    'user_id' => $user->id,
+                    'error'   => $e->getMessage(),
+                ]);
+            }
             throw new EmailNotVerifiedException($user->email);
         }
 
@@ -154,7 +188,18 @@ class AuthService
             return false;
         }
 
-        $user->sendEmailVerificationNotification();
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (\Throwable $e) {
+            Log::error('OTP email delivery failed during resend-verification', [
+                'user_id' => $user->id,
+                'error'   => $e->getMessage(),
+            ]);
+            // Re-throw so the controller can return a 500 — the authenticated user
+            // can tell something went wrong (unlike the unauthenticated resend path).
+            throw $e;
+        }
+
         return true;
     }
 }

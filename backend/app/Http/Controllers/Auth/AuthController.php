@@ -165,7 +165,15 @@ class AuthController extends Controller
         // Revoke all tokens except the current one so other devices must re-login.
         // SECURITY: Without this, a compromised password change wouldn't kick out
         // an active attacker who already has a token.
-        $user->tokens()->where('id', '!=', $user->currentAccessToken()->id)->delete();
+        // Guard: currentAccessToken() returns a TransientToken (no $id) when the
+        // user is authenticated via session/actingAs() rather than a Bearer token.
+        $currentToken = $user->currentAccessToken();
+        if (method_exists($currentToken, 'getKey') && $currentToken->getKey()) {
+            $user->tokens()->where('id', '!=', $currentToken->getKey())->delete();
+        } else {
+            // Session-based auth or no real token — revoke all tokens on all devices.
+            $user->tokens()->delete();
+        }
 
         return response()->json(['message' => 'Password updated successfully.']);
     }
