@@ -70,9 +70,9 @@ class CartController extends Controller
     public function sync(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'items'            => 'required|array',
-            'items.*.productId'=> 'required|integer|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items'             => 'required|array|max:100',
+            'items.*.productId' => 'required|integer|exists:products,id',
+            'items.*.quantity'  => 'required|integer|min:1|max:100',
         ]);
 
         $cart = $this->service->sync($request->user(), $data['items']);

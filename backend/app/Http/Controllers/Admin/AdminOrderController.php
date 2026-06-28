@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Jobs\SendOrderStatusUpdateEmail;
 use App\Models\Order;
+use App\Services\AnalyticsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -31,10 +32,11 @@ class AdminOrderController extends Controller
         }
 
         if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('order_number', 'ILIKE', "%{$search}%")
-                  ->orWhere('customer_name', 'ILIKE', "%{$search}%")
-                  ->orWhere('customer_email', 'ILIKE', "%{$search}%");
+            $term = '%' . $search . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('order_number', 'like', $term)
+                  ->orWhere('customer_name', 'like', $term)
+                  ->orWhere('customer_email', 'like', $term);
             });
         }
 
@@ -81,6 +83,8 @@ class AdminOrderController extends Controller
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
         $order->payment_status = $data['paymentStatus'];
         $order->save();
+
+        AnalyticsService::clearCache();
 
         return response()->json([
             'data' => new OrderResource($order->fresh('items')),

@@ -72,6 +72,13 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
+        // ── Order placement: 10 per hour per user (prevent order spam) ──────────────
+        RateLimiter::for('order-create', function (Request $request) {
+            return Limit::perHour(10)->by(
+                optional($request->user())->id ?: $request->ip()
+            );
+        });
+
         // ── Admin panel: 60 per minute (tighter — admin actions have larger blast radius) ──
         // SECURITY FIX: Previously 300/min, far too permissive for privileged endpoints.
         RateLimiter::for('admin', function (Request $request) {

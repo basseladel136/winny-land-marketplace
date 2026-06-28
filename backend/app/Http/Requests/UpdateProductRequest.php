@@ -21,7 +21,7 @@ class UpdateProductRequest extends FormRequest
             'comparePrice'  => ['nullable', 'numeric', 'min:0'],
             'stock'         => ['sometimes', 'integer', 'min:0'],
             'sku'           => ['nullable', 'string', 'max:100', Rule::unique('products', 'sku')->ignore($this->route('product'))],
-            'image'         => ['nullable', 'url', 'max:500'],
+            'image'         => ['nullable', 'url:http,https', 'max:500'],
             'isActive'      => ['nullable', 'boolean'],
             'isFeatured'    => ['nullable', 'boolean'],
         ];

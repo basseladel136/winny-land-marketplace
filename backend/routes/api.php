@@ -122,7 +122,7 @@ Route::prefix('v1')->middleware(['setLocale', 'throttle:public'])->group(functio
             // Orders
             Route::prefix('orders')->group(function () {
                 Route::get('/',              [OrderController::class, 'index']);
-                Route::post('/',             [OrderController::class, 'store']);
+                Route::post('/',             [OrderController::class, 'store'])->middleware('throttle:order-create');
                 Route::get('/{orderNumber}', [OrderController::class, 'show']);
             });
 
