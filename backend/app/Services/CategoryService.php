@@ -42,7 +42,7 @@ class CategoryService
             'sort_order' => $data['sortOrder'] ?? 0,
         ]);
 
-        Cache::flush();
+        $this->clearCache();
 
         return $category;
     }
@@ -58,7 +58,7 @@ class CategoryService
             'sort_order' => $data['sortOrder'] ?? null,
         ], fn ($v) => ! is_null($v)));
 
-        Cache::flush();
+        $this->clearCache();
 
         return $category->fresh();
     }
@@ -66,6 +66,21 @@ class CategoryService
     public function delete(int $id): void
     {
         Category::findOrFail($id)->delete();
-        Cache::flush();
+        $this->clearCache();
+    }
+
+    /**
+     * Clear only category-related cache entries.
+     *
+     * SECURITY FIX: Previously used Cache::flush() which would evict ALL cache
+     * entries (sessions, Paymob auth tokens, product cache, analytics, etc.),
+     * causing unnecessary session disruptions and performance regressions.
+     */
+    private function clearCache(): void
+    {
+        Cache::forget('categories:all:admin');
+        Cache::forget('categories:all:active');
+        // Also bust the products tagged cache since product listings embed category data
+        Cache::tags(['products'])->flush();
     }
 }

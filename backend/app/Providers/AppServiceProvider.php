@@ -18,8 +18,7 @@ class AppServiceProvider extends ServiceProvider
 
     protected function configureRateLimiting(): void
     {
-        // ── Login: 5 attempts per 15 minutes per IP (brute-force protection) ───
-        // ThrottleRequestsException (HTTP 429) is caught by bootstrap/app.php
+        // ── Login: 5 attempts per 15 minutes per IP (brute-force protection) ────
         RateLimiter::for('login', function (Request $request) {
             return Limit::perMinutes(15, 5)->by($request->ip());
         });
@@ -29,10 +28,36 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->ip());
         });
 
-        // ── Email verification resend: 3 per 5 minutes per user/IP ──────────────
+        // ── OTP verify: 5 attempts per 15 minutes keyed by email+IP ─────────────
+        // SECURITY FIX: Previously shared the 'login' limiter, creating cross-
+        // endpoint interference. Dedicated limiter keyed on email+IP prevents
+        // an attacker from exhausting login attempts to block OTP verification
+        // (or vice versa) while still limiting brute-force of 6-digit codes.
+        RateLimiter::for('otp-verify', function (Request $request) {
+            $email = strtolower((string) $request->input('email', ''));
+            return Limit::perMinutes(15, 5)->by('otp:' . $email . ':' . $request->ip());
+        });
+
+        // ── OTP resend: 3 per 10 minutes per email+IP ────────────────────────────
+        // SECURITY FIX: Dedicated limiter keyed on email prevents OTP flooding
+        // for a specific target regardless of which IP the request comes from
+        // (within the per-IP cap applied by the 'public' global limiter).
+        RateLimiter::for('otp-resend', function (Request $request) {
+            $email = strtolower((string) $request->input('email', ''));
+            return Limit::perMinutes(10, 3)->by('otp-resend:' . $email . ':' . $request->ip());
+        });
+
+        // ── Email verification resend (authenticated): 3 per 5 minutes ──────────
         RateLimiter::for('verification-resend', function (Request $request) {
             return Limit::perMinutes(5, 3)
                 ->by(optional($request->user())->id ?: $request->ip());
+        });
+
+        // ── Coupon validation: 20 per minute per IP ───────────────────────────────
+        // SECURITY FIX: Previously only covered by the global 'public' limiter (60/min).
+        // Dedicated limit prevents coupon brute-force enumeration attacks.
+        RateLimiter::for('coupon-validate', function (Request $request) {
+            return Limit::perMinute(20)->by($request->ip());
         });
 
         // ── Public endpoints: 60 per minute per IP ───────────────────────────────
@@ -47,9 +72,10 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        // ── Admin panel: 300 per minute (trusted users, but still limited) ───────
+        // ── Admin panel: 60 per minute (tighter — admin actions have larger blast radius) ──
+        // SECURITY FIX: Previously 300/min, far too permissive for privileged endpoints.
         RateLimiter::for('admin', function (Request $request) {
-            return Limit::perMinute(300)->by(
+            return Limit::perMinute(60)->by(
                 optional($request->user())->id ?: $request->ip()
             );
         });

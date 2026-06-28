@@ -41,11 +41,11 @@ Route::prefix('v1')->middleware(['setLocale', 'throttle:public'])->group(functio
 
         // Verify the registration OTP (public — proof of identity is the code).
         Route::post('verify-otp', [AuthController::class, 'verifyOtp'])
-            ->middleware('throttle:login');
+            ->middleware('throttle:otp-verify');
 
         // Resend a verification OTP to an unverified account.
         Route::post('resend-otp', [AuthController::class, 'resendOtp'])
-            ->middleware('throttle:verification-resend');
+            ->middleware('throttle:otp-resend');
     });
 
     // ── Email verification (GET — clicked from email link) ─────────────────
@@ -73,7 +73,8 @@ Route::prefix('v1')->middleware(['setLocale', 'throttle:public'])->group(functio
     Route::get('products/{productId}/reviews', [ReviewController::class, 'index']);
 
     // Coupon validation (public so guest checkout works)
-    Route::post('coupons/validate', [CouponController::class, 'validate']);
+    Route::post('coupons/validate', [CouponController::class, 'validate'])
+        ->middleware('throttle:coupon-validate');
 
     // ── Authenticated endpoints ────────────────────────────────────────────
 

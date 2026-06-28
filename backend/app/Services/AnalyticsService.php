@@ -52,9 +52,13 @@ class AnalyticsService
         });
     }
 
-    public function customers(): array
+    public function customers(int $page = 1): array
     {
-        return Cache::remember('analytics:customers', 300, function () {
+        // PERFORMANCE FIX: include the page number in the cache key so
+        // different pages are cached independently.
+        // CORRECTNESS FIX: pagination URLs in the cached payload used to reference
+        // the URL at cache-write time, which broke on subsequent page requests.
+        return Cache::remember("analytics:customers:page:{$page}", 300, function () {
             return User::where('role', 'customer')
                 ->withCount('orders')
                 ->withSum(['orders as total_spent' => fn ($q) => $q->where('payment_status', 'paid')], 'total')
@@ -62,5 +66,18 @@ class AnalyticsService
                 ->paginate(20)
                 ->toArray();
         });
+    }
+
+    /**
+     * Flush analytics caches when underlying data changes (e.g. after an order
+     * is paid or a new user registers).
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget('analytics:summary');
+        // Customer pages — flush all known page keys (up to a reasonable limit)
+        for ($i = 1; $i <= 50; $i++) {
+            Cache::forget("analytics:customers:page:{$i}");
+        }
     }
 }

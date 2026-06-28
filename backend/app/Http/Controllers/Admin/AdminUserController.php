@@ -14,16 +14,20 @@ class AdminUserController extends Controller
     {
         $request->validate([
             'search'  => ['sometimes', 'string', 'max:100'],
-            'role'    => ['sometimes', 'string', 'in:user,admin'],
+            // BUG FIX: the User model uses 'customer' not 'user' as the role value.
+            'role'    => ['sometimes', 'string', 'in:customer,admin'],
             'perPage' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ]);
 
         $query = User::latest();
 
         if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'ILIKE', "%{$search}%")
-                  ->orWhere('email', 'ILIKE', "%{$search}%");
+            // Use database-agnostic LIKE (case-insensitive on PostgreSQL via
+            // collation; on SQLite LIKE is case-insensitive for ASCII by default).
+            $term = '%' . $search . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', $term)
+                  ->orWhere('email', 'like', $term);
             });
         }
 
