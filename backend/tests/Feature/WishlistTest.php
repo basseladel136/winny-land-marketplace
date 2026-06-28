@@ -116,4 +116,70 @@ class WishlistTest extends TestCase
             ->postJson('/api/v1/wishlist/99999/toggle')
             ->assertStatus(404);
     }
+
+    // ── Profile stats integration ─────────────────────────────────────────────
+
+    public function test_wishlist_count_in_profile_stats_is_accurate(): void
+    {
+        $this->actingAs($this->user)
+            ->postJson("/api/v1/wishlist/{$this->product->id}/toggle");
+
+        $this->actingAs($this->user)
+            ->getJson('/api/v1/auth/stats')
+            ->assertOk()
+            ->assertJsonPath('data.wishlistCount', 1);
+    }
+
+    public function test_empty_wishlist_shows_zero_count_in_stats(): void
+    {
+        $this->actingAs($this->user)
+            ->getJson('/api/v1/auth/stats')
+            ->assertOk()
+            ->assertJsonPath('data.wishlistCount', 0);
+    }
+
+    public function test_wishlist_count_decrements_after_removal(): void
+    {
+        $this->actingAs($this->user)
+            ->postJson("/api/v1/wishlist/{$this->product->id}/toggle");
+
+        // Remove via toggle
+        $this->actingAs($this->user)
+            ->postJson("/api/v1/wishlist/{$this->product->id}/toggle");
+
+        $this->actingAs($this->user)
+            ->getJson('/api/v1/auth/stats')
+            ->assertOk()
+            ->assertJsonPath('data.wishlistCount', 0);
+    }
+
+    public function test_wishlist_count_is_isolated_per_user(): void
+    {
+        $userB = User::factory()->create();
+
+        $this->actingAs($this->user)
+            ->postJson("/api/v1/wishlist/{$this->product->id}/toggle");
+
+        // User B's count must still be 0
+        $this->actingAs($userB)
+            ->getJson('/api/v1/auth/stats')
+            ->assertOk()
+            ->assertJsonPath('data.wishlistCount', 0);
+    }
+
+    public function test_multiple_products_counted_in_wishlist_stats(): void
+    {
+        $category = Category::factory()->create();
+        $p2 = Product::factory()->create(['category_id' => $category->id, 'is_active' => true]);
+
+        $this->actingAs($this->user)
+            ->postJson("/api/v1/wishlist/{$this->product->id}/toggle");
+        $this->actingAs($this->user)
+            ->postJson("/api/v1/wishlist/{$p2->id}/toggle");
+
+        $this->actingAs($this->user)
+            ->getJson('/api/v1/auth/stats')
+            ->assertOk()
+            ->assertJsonPath('data.wishlistCount', 2);
+    }
 }
