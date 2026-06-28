@@ -72,6 +72,13 @@ export const useWishlistStore = create<WishlistState>()(
       isIn: (id: string) => get().ids.includes(id),
 
       toggle: async (productId: string) => {
+        const numericId = toInt(productId);
+
+        // Seed/demo products have non-numeric IDs ("p1"…). They can never be
+        // stored in the backend, so they must not affect the persisted count
+        // (which must always equal the backend's row count for this user).
+        if (numericId === null) return;
+
         const ids = get().ids;
         const alreadyIn = ids.includes(productId);
 
@@ -81,9 +88,7 @@ export const useWishlistStore = create<WishlistState>()(
           : [...ids, productId];
         set({ ids: next, count: next.length });
 
-        // Backend sync for real numeric product IDs
-        const numericId = toInt(productId);
-        if (numericId !== null && getAuthToken()) {
+        if (getAuthToken()) {
           try {
             await wishlistApi.toggle(numericId);
           } catch {

@@ -63,7 +63,13 @@ function ProfilePage() {
   async function loadProfile() {
     setLoading(true);
     try {
-      const [meRes, statsRes] = await Promise.all([authApi.me(), authApi.stats()]);
+      // Run all three in parallel; hydrate() syncs the wishlist store with
+      // the backend so the counter is always accurate on page load/refresh.
+      const [meRes, statsRes] = await Promise.all([
+        authApi.me(),
+        authApi.stats(),
+        useWishlistStore.getState().hydrate(),
+      ]);
       setLocalUser(meRes.user);
       setUser(meRes.user);
       setStats(statsRes.data);
