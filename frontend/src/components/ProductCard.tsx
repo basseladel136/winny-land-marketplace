@@ -2,12 +2,13 @@ import { Heart, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { useStore, type Product } from "@/lib/store";
+import { useWishlistStore } from "@/lib/wishlistStore";
 import { formatPrice } from "@/lib/utils";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const addToCart = useStore((s) => s.addToCart);
-  const toggleWishlist = useStore((s) => s.toggleWishlist);
-  const inWishlist = useStore((s) => s.wishlist.includes(product.id));
+  const { toggle: toggleWishlist, isIn } = useWishlistStore();
+  const inWishlist = isIn(product.id);
   const category = useStore((s) => s.categories.find((c) => c.id === product.categoryId));
 
   return (
@@ -34,7 +35,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         <button
           onClick={(e) => {
             e.preventDefault();
-            toggleWishlist(product.id);
+            void toggleWishlist(product.id);
           }}
           aria-label="Toggle wishlist"
           className="absolute right-3 top-3 rounded-full bg-background/90 p-2 backdrop-blur transition hover:bg-pink"

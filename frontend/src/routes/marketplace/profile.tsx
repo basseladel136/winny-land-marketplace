@@ -31,9 +31,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthStore } from "@/lib/authStore";
-import { useStore } from "@/lib/store";
+import { useWishlistStore } from "@/lib/wishlistStore";
 import { formatPrice } from "@/lib/utils";
-import { authApi, ordersApi, type ApiOrder, type ApiUser, type ProfileStats } from "@/lib/api";
+import { authApi, ordersApi, wishlistApi, type ApiOrder, type ApiProduct, type ApiUser, type ProfileStats } from "@/lib/api";
+// Note: useStore (seed-data store) not needed here — wishlist now backed by API
 
 export const Route = createFileRoute("/marketplace/profile")({
   component: ProfilePage,
@@ -269,6 +270,7 @@ function InfoRow({ icon, value, muted }: { icon: React.ReactNode; value: string;
 // Stats
 // ---------------------------------------------------------------------------
 function ProfileStatsGrid({ stats }: { stats: ProfileStats | null }) {
+  const wishlistCount = useWishlistStore((s) => s.count);
   const items = [
     { label: "Orders", value: stats?.ordersCount ?? 0, icon: <Package className="h-4 w-4" /> },
     {
@@ -276,7 +278,7 @@ function ProfileStatsGrid({ stats }: { stats: ProfileStats | null }) {
       value: stats ? formatPrice(stats.totalSpent) : formatPrice(0),
       icon: <Wallet className="h-4 w-4" />,
     },
-    { label: "Wishlist", value: stats?.wishlistCount ?? 0, icon: <Heart className="h-4 w-4" /> },
+    { label: "Wishlist", value: wishlistCount, icon: <Heart className="h-4 w-4" /> },
     { label: "Reviews", value: stats?.reviewsCount ?? 0, icon: <Star className="h-4 w-4" /> },
   ];
 
@@ -430,14 +432,43 @@ function OrdersTab({ orders, loading }: { orders: ApiOrder[]; loading: boolean }
 }
 
 // ---------------------------------------------------------------------------
-// Wishlist tab — products hearted on the marketplace (local store)
+// Wishlist tab — products saved by the authenticated user
 // ---------------------------------------------------------------------------
 function WishlistTab() {
-  const wishlist = useStore((s) => s.wishlist);
-  const products = useStore((s) => s.products);
-  const toggleWishlist = useStore((s) => s.toggleWishlist);
+  const { toggle, apiItems, count, hydrate } = useWishlistStore();
+  const [items, setItems] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const items = products.filter((p) => wishlist.includes(p.id));
+  useEffect(() => {
+    // Use cached apiItems if available; otherwise fetch
+    if (apiItems.length > 0) {
+      setItems(apiItems);
+      return;
+    }
+    setLoading(true);
+    wishlistApi.list()
+      .then((res) => {
+        setItems(res.data);
+        hydrate(); // sync store
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep local display in sync with store's apiItems
+  useEffect(() => {
+    if (apiItems.length > 0 || count === 0) {
+      setItems(apiItems);
+    }
+  }, [apiItems, count]);
+
+  async function handleRemove(productId: number) {
+    setItems((prev) => prev.filter((p) => p.id !== productId));
+    await toggle(String(productId));
+  }
+
+  if (loading) return <ListSkeleton />;
 
   if (items.length === 0) {
     return (
@@ -456,15 +487,17 @@ function WishlistTab() {
           <CardContent className="flex items-center gap-4 p-4">
             <Link
               to="/marketplace/$slug"
-              params={{ slug: product.id }}
+              params={{ slug: product.slug }}
               className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted"
             >
-              <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+              {product.image && (
+                <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+              )}
             </Link>
             <div className="min-w-0 flex-1">
               <Link
                 to="/marketplace/$slug"
-                params={{ slug: product.id }}
+                params={{ slug: product.slug }}
                 className="block truncate font-medium hover:text-pink"
               >
                 {product.name}
@@ -474,7 +507,7 @@ function WishlistTab() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => toggleWishlist(product.id)}
+              onClick={() => handleRemove(product.id)}
               aria-label="Remove from wishlist"
               className="text-muted-foreground hover:text-destructive"
             >

@@ -12,6 +12,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authApi, type ApiUser } from "./api";
+import { useWishlistStore } from "./wishlistStore";
 
 interface AuthState {
   user: ApiUser | null;
@@ -69,6 +70,8 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           });
+          // Hydrate wishlist from backend after login
+          void useWishlistStore.getState().hydrate();
         } catch (err: unknown) {
           const apiErr = err as {
             errors?: { email?: string[] };
@@ -120,6 +123,8 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           });
+          // Hydrate wishlist from backend after OTP verification (first login)
+          void useWishlistStore.getState().hydrate();
         } catch (err: unknown) {
           const apiErr = err as { errors?: Record<string, string[]>; message?: string };
           const firstError = apiErr?.errors
@@ -142,6 +147,7 @@ export const useAuthStore = create<AuthState>()(
           // Ignore network errors — clear state regardless
         } finally {
           set({ user: null, token: null, isAuthenticated: false, error: null });
+          useWishlistStore.getState().clear();
         }
       },
 
@@ -152,9 +158,11 @@ export const useAuthStore = create<AuthState>()(
         try {
           const result = await authApi.me();
           set({ user: result.user, isAuthenticated: true, isLoading: false });
+          void useWishlistStore.getState().hydrate();
         } catch {
           // Token invalid — clear auth state
           set({ user: null, token: null, isAuthenticated: false, isLoading: false });
+          useWishlistStore.getState().clear();
         }
       },
 
